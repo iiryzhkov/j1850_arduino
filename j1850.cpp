@@ -2,15 +2,14 @@
 #include <Arduino.h>
 #include "timer.h"
 
-void j1850::init(int in_pin_, int out_pin_, bool review_)
-{
+void j1850::init(int in_pin_, int out_pin_, bool review_) {
 	// инициализация параметров
 	out_pin = out_pin_;
 	in_pin = in_pin_;
     review = review_;
 	
 	//если включен мониторинг, активируем Serial
-    if(review_){
+    if(review_) {
 		Serial.begin(9600);
 		mode = 1;
 	} 
@@ -26,8 +25,7 @@ void j1850::init(int in_pin_, int out_pin_, bool review_)
 	if_init = true;
 }
 
-bool j1850::accept(byte* msg_buf, bool crt_c)
-{
+bool j1850::accept(byte* msg_buf, bool crt_c) {
 	//если не выполненна инициализация - уходим
 	if(!if_init) return false;
 	
@@ -36,8 +34,8 @@ bool j1850::accept(byte* msg_buf, bool crt_c)
 	
 	//вызывается при положительном результате 
 	//приема и при включении данной опции
-	if((crt_c) && ( f )){
-		if(msg_buf[rx_nbyte - 1] != crc(msg_buf, rx_nbyte - 1)){
+	if((crt_c) && ( f )) {
+		if(msg_buf[rx_nbyte - 1] != crc(msg_buf, rx_nbyte - 1)) {
 			f = false;
 			messege = ERROR_ACCEPT_CRC;
 		}
@@ -45,19 +43,17 @@ bool j1850::accept(byte* msg_buf, bool crt_c)
 	
 	//мониторинг
 	//считывание команд, а так же сам мониторинг
-	if(review){
+	if(review) {
 		if(Serial.available() >= 2) {
 			mode = Serial.parseInt();
 		}
 		monitor();
 	}
 	
-	
 	return f;
 }
 
-bool j1850::send(byte *msg_buf, int nbytes)
-{	
+bool j1850::send(byte *msg_buf, int nbytes) {	
 	//если не выполненна инициализация - уходим
 	if(!if_init) return false;
 	
@@ -74,17 +70,14 @@ bool j1850::send(byte *msg_buf, int nbytes)
 	return f;
 }
 
-bool j1850::recv_msg(byte *msg_buf)
-{
+bool j1850::recv_msg(byte *msg_buf) {
 	int nbits, nbytes;
 	bool bit_state;
 	rx_msg_buf = msg_buf;
 
 	start_timer();
-	while (!is_active())
-	{
-		if (read_timer() > WAIT_100us)
-		{
+	while (!is_active()) {
+		if (read_timer() > WAIT_100us) {
 			stop_timer();
 			messege = ERROR_NO_RESPONDS_WITHIN_100US;
 			return false;
@@ -92,8 +85,7 @@ bool j1850::recv_msg(byte *msg_buf)
 	}
 	
 	start_timer();
-	while (is_active())
-	{
+	while (is_active()) {
 		if (read_timer() > RX_SOF_MAX) {
 			messege = ERROR_ON_SOF_TIMEOUT;
 			return false;
@@ -101,6 +93,7 @@ bool j1850::recv_msg(byte *msg_buf)
 	}
 
 	stop_timer();
+
 	if (read_timer() < RX_SOF_MIN) {
 		messege = ERROR_SIMBOLE_WAS_NOT_SOF;
 		return false;
@@ -108,16 +101,13 @@ bool j1850::recv_msg(byte *msg_buf)
 	
 	bit_state = is_active();
 	start_timer();
-	for (nbytes = 0; nbytes < 12; ++nbytes)
-	{
+
+	for (nbytes = 0; nbytes < 12; ++nbytes) {
 		nbits = 8;
-		do
-		{
+		do {
 			*msg_buf <<= 1;
-			while (is_active() == bit_state)
-			{
-				if (read_timer() > RX_EOD_MIN)
-				{
+			while (is_active() == bit_state) {
+				if (read_timer() > RX_EOD_MIN) {
 					stop_timer();
 					rx_nbyte = nbytes;
 					messege = MESSEGE_ACCEPT_OK;
@@ -128,6 +118,7 @@ bool j1850::recv_msg(byte *msg_buf)
 			bit_state = is_active();
 			long tcnt1_buf = read_timer();
 			start_timer();
+
 			if (tcnt1_buf < RX_SHORT_MIN) {
 				stop_timer();
 				messege = ERROR_SIMBOLE_WAS_NOT_SHORT;
@@ -147,13 +138,14 @@ bool j1850::recv_msg(byte *msg_buf)
 	}
 
 	stop_timer();
+
 	rx_nbyte = nbytes;
 	messege = MESSEGE_ACCEPT_OK;
+	
 	return true;
 }
 
-bool j1850::send_msg(byte *msg_buf, int nbytes)
-{
+bool j1850::send_msg(byte *msg_buf, int nbytes) {
 	int nbits, delay;
 	byte temp_byte;
 
@@ -164,27 +156,22 @@ bool j1850::send_msg(byte *msg_buf, int nbytes)
 		messege = ERROR_MESSEGE_TO_LONG;
 		return false;
 	}
-	wait_idle();
 
+	wait_idle();
 	start_timer();
 	active();
 
 	while (read_timer() < TX_SOF);
-	do
-	{
+	do {
 		temp_byte = *msg_buf;
 		nbits = 8;
-		while (nbits--)
-		{
-			if (nbits & 1)
-			{
+		while (nbits--) {
+			if (nbits & 1) {
 				passive();
 				start_timer();
 				delay = (temp_byte & 0x80) ? TX_LONG : TX_SHORT;
 				while (read_timer() < delay);
-			}
-			else
-			{
+			} else {
 				active();
 				start_timer();
 				delay = (temp_byte & 0x80) ? TX_SHORT : TX_LONG;
@@ -197,16 +184,19 @@ bool j1850::send_msg(byte *msg_buf, int nbytes)
 
 	passive();
 	start_timer();
+
 	while (read_timer() <= TX_EOF);
+
 	stop_timer();
+
 	messege = MESSEGE_SEND_OK;
+
 	return true;
 }
 
-void j1850::monitor(void)
-{
+void j1850::monitor(void) {
 	static byte old_messege;
-	switch(mode){
+	switch(mode) {
 		//режим тестирования
 		case 5:
 		tests();
@@ -216,26 +206,14 @@ void j1850::monitor(void)
 		//режим - только RX
 		case 4:
 		if (MESSEGE_ACCEPT_OK == messege) {
-			Serial.print("RX: ");
-			for (int i = 0; i < rx_nbyte; i++)
-			{
-				Serial.print(rx_msg_buf[i], HEX);
-				Serial.print(" ");
-			}
-			Serial.print("\n");
+			sendToUART("RX: ", rx_nbyte, rx_msg_buf);
 		}
 		break;
 		
 		//режим - только TX
 		case 3:
 		if (MESSEGE_SEND_OK == messege) {
-			Serial.print("TX: ");
-			for (int i = 0; i < tx_nbyte; i++)
-			{
-				Serial.print(tx_msg_buf[i], HEX);
-				Serial.print(" ");
-			}
-			Serial.print("\n");
+			sendToUART("TX: ", tx_nbyte, tx_msg_buf);
 		}
 		break;
 		
@@ -250,41 +228,32 @@ void j1850::monitor(void)
 		//режим - RX\TX
 		case 1:
 		if (MESSEGE_SEND_OK == messege) {
-			Serial.print("TX: ");
-			for (int i = 0; i < tx_nbyte; i++)
-			{
-				Serial.print(tx_msg_buf[i], HEX);
-				Serial.print(" ");
-			}
-			Serial.print("\n");
+			sendToUART("TX: ", tx_nbyte, tx_msg_buf);	
 		}
 		if (MESSEGE_ACCEPT_OK == messege) {
-			Serial.print("RX: ");
-			for (int i = 0; i < rx_nbyte; i++)
-			{
-				Serial.print(rx_msg_buf[i], HEX);
-				Serial.print(" ");
-			}
-			Serial.print("\n");
+			sendToUART("RX: ", rx_nbyte, rx_msg_buf);
 		}
 		break;
 		
 		//режим выбора сообщений по заголовку
 		default:
-		if((MESSEGE_ACCEPT_OK == messege) && (mode == rx_msg_buf[0])){
-			Serial.print("RX: ");
-			for (int i = 0; i < rx_nbyte; i++)
-			{
-				Serial.print(rx_msg_buf[i], HEX);
-				Serial.print(" ");
-			}
-			Serial.print("\n");
+		if((MESSEGE_ACCEPT_OK == messege) && (mode == rx_msg_buf[0])) {
+			sendToUART("RX: ", rx_nbyte, rx_msg_buf);
 		}	
 		break;
 	}
-	
 }
-void j1850::tests(void){
+
+void j1850::sendToUART(const char* header, int rx_nbyte, byte *msg_buf) {
+	Serial.print(header);
+	for (int i = 0; i < rx_nbyte; i++) {
+		Serial.print(msg_buf[i], HEX);
+		Serial.print(" ");
+	}
+	Serial.print("\n");
+}
+
+void j1850::tests(void) {
 		char fail[ ] = "Test failure!\n";
 		char ok[ ] = "Test succes!\n";
 		//тест счетчика
@@ -295,38 +264,41 @@ void j1850::tests(void){
 		Serial.print(WAIT_100us);
 		Serial.print("cycles\n\n");
 
-		for(int i = 10; i<110; i+=10){
+		for(int i = 10; i<110; i+=10) {
 			start_timer();
 			delayMicroseconds(i);
 			stop_timer();
-			
+
 			Serial.print(i);
 			Serial.print("ms ~ ");
 			Serial.print(read_timer());
 			Serial.print(" cycles\n");
 		}
-		if(read_timer() == WAIT_100us){
+
+		if(read_timer() == WAIT_100us) {
 			Serial.print(ok);
-		}else{
+		} else {
 			Serial.print(fail);
 		}
+
 		Serial.print("----End timer test----\n\n");
 		
 		//тест i\o
 		Serial.print("----Start I/O test----\n");
-		if(!is_active()){
+		if(!is_active()) {
 			active();
-			if(is_active()){
+			if(is_active()) {
 				Serial.print(ok);
-			}else{
+			} else {
 				Serial.print(fail);
 			}
 			passive();
-		}else{
+		} else {
 			Serial.print(fail);
 		}
 		Serial.print("----End I/O test----\n\n");
 }
+
 void j1850::active(void) {
 	digitalWrite(out_pin, LOW);
 }
@@ -339,22 +311,18 @@ bool j1850::is_active(void) {
 	return !digitalRead(in_pin);
 }
 
-void j1850::wait_idle(void)
-{
+void j1850::wait_idle(void) {
 	start_timer();
-	while (read_timer() < RX_IFS_MIN)
-	{
+	while (read_timer() < RX_IFS_MIN) {
 		if (is_active()) start_timer();
 	}
 }
 
-byte j1850::crc(byte *msg_buf, int nbytes)
-{
+byte j1850::crc(byte *msg_buf, int nbytes) {
 	int i;
     	byte crc = 0xFF;
 	
-    	while (nbytes--)
-    	{
+    	while (nbytes--) {
         	crc ^= *msg_buf++;
  
         	for (i = 0; i < 8; i++)
