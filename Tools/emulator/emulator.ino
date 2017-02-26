@@ -18,9 +18,12 @@ void sendToUART(const char* header, int rx_nbyte, byte *msg_buf) {
   Serial.print(header);
   for (int i = 0; i < rx_nbyte; i++) {
     Serial.print(msg_buf[i], HEX);
-    Serial.print(" ");
+    if(i == (rx_nbyte - 1)){
+      Serial.print("\n");
+    }else{
+      Serial.print(" ");
+    }
   }
-  Serial.print("\n");
 }
 
 void RandomMass() {

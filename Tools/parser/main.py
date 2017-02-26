@@ -5,7 +5,7 @@ def SerialParser(input_mass = {}):
     if len(input_mass) < 1:
         input_mass = ser.readline()
 
-    input_mass_pars = input_mass[4: -2].decode('utf-8').split(' ')
+    input_mass_pars = input_mass[4: -1].decode('utf-8').split(' ')
     len_input_mass_pars = len(input_mass_pars)
     output_str = ''
 
