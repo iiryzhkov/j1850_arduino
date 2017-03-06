@@ -10,7 +10,6 @@ file_pull = 'pull.log'
 file_all = 'all.log'
 
 def SerialParser(config):
-
     try:
         input_mass = ser.readline()
     except Exception as e:
@@ -24,6 +23,7 @@ def SerialParser(config):
         logging.warning("Ошибка декодирования:")
         logging.warning(e)
         return False
+        
     len_input_mass_pars = len(input_mass_pars)
     output_str = ''
 
@@ -38,34 +38,45 @@ def SerialParser(config):
     return output_str
 
 
-def komporator(config , i = False):
-    # инициализация статических переменных
+def komporator(config , enclosed = False):
 
+    # Инициализация статической переменной, для хранения предыдущего сообщения
     if not hasattr(komporator, 'old_str'):
         komporator.old_str = ''
 
-    # читаем сообщения
+    # Читаем сообщение
     data_str = SerialParser(config)
     if not data_str:
         return
 
+    # Если сообщения нет в пуле
     if(pull.count(data_str) == 0):
-
-        if not i:
+        # Выводим предыдущее сообщение
+        if not enclosed and komporator.old_str:
             logging.info("OLD " + komporator.old_str)
-
+        
+        # Если стоит параметр logger_pull пишем в лог
         if config['logger_pull']:
             print_in_file(file_pull, data_str)
 
+        # Добавляем в пул
         pull.append(data_str)
+
+        # Обновляем предыдущую строку 
         komporator.old_str = data_str
+
+        # Выводим сообщение
         logging.info("NEW " + data_str)
 
+        # Зпускаем следующую интерацию 
         komporator(config, True)
     else:
-        if i:
-            logging.info("FUT " + data_str + '\n')
 
+        # Если есть в пуле то выводим его как следующее
+        # при условии что мы в рекурсии
+        if enclosed:
+            logging.info("FUT " + data_str)
+            logging.info("-" * 20 + "\n")
         komporator.old_str = data_str
         
 

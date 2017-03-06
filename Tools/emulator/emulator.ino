@@ -55,17 +55,20 @@ void PrintRandomStr(int f = 0) {
     case 5:
       sendToUART(her, len_srts[4], str4);
       break;
-    default:
+    case 6:
       RandomMass();
+      break;
+    default:
+      break;
   }
 }
 
 void loop() {
-  PrintRandomStr(2);
-  PrintRandomStr(3);
-  PrintRandomStr();
-  PrintRandomStr(4);
-  PrintRandomStr();
-  PrintRandomStr(1);
+  PrintRandomStr(0);
+  PrintRandomStr(0);
+  PrintRandomStr(6);
+  PrintRandomStr(6);
+  PrintRandomStr(0);
+  PrintRandomStr(0);
   delay(1000);
 }
