@@ -1,5 +1,5 @@
 {
-	"port":"COM4",
+	"port":"/dev/cu.wchusbserial1d10",
 	"speed":9600,
 	"logger_all":false,
 	"logger_pull":true,
