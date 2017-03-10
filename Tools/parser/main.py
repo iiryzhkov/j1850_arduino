@@ -74,7 +74,7 @@ def komporator(config , enclosed = False):
 
         # Если есть в пуле то выводим его как следующее
         # при условии что мы в рекурсии
-        if enclosed:
+        if enclosed and data_str != komporator.old_str:
             logging.info("FUT " + data_str)
             logging.info("-" * 20 + "\n")
         komporator.old_str = data_str
