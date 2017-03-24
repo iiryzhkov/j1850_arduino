@@ -64,6 +64,7 @@ private:
 	int tx_nbyte;
 
 	void monitor(void);
+	void sendToUART(const char*, int, byte*);
 	void wait_idle(void);
 	void tests(void);
 	
