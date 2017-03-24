@@ -98,9 +98,10 @@ def init_port(config):
 
 
 def print_in_file(file_name, data):
+    time = datetime.now().strftime("%H:%M:%S |")
     try:
         with open(file_name, 'a', encoding='utf-8') as fh:
-            fh.write(data + '\n')
+            fh.write(time + data + '\n')
     except Exception as e:
         logging.warning('Ошибка записи в: ' + file_name)
 
@@ -141,7 +142,7 @@ def autopull(_pull, filename = 'autopull.txt'):
 def init_loggs(configб):
     try:
         logging.basicConfig(format = u'%(levelname)-8s [%(asctime)s] %(message)s', level = logging.DEBUG)
-        time = datetime.now().strftime("\n--- %d-%m-%y %H:%M ---")
+        time = " - loging start"
         if config['logger_all']:
             print_in_file(file_all, time)
         if config['logger_pull']:
