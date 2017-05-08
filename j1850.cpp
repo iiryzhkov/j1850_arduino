@@ -56,6 +56,28 @@ bool j1850::accept(byte* msg_buf, bool crt_c)
 	return f;
 }
 
+bool j1850::easy_send(int size, ...)
+{
+	if (size == 0) return false;
+
+	va_list ap;
+
+	byte *buff = new byte[size];
+	bool result = false;
+
+  	va_start(ap,size);
+  	for (int i = 0; i < size; i++)
+  	{
+    	buff[i] = va_arg(ap, int);
+  	}
+  	va_end (ap);
+
+  	result = send(buff, size);
+
+  	delete[] buff;
+  	return result;
+}
+
 bool j1850::send(byte *msg_buf, int nbytes)
 {	
 	//если не выполненна инициализация - уходим
