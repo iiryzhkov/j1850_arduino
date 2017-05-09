@@ -53,6 +53,26 @@ bool j1850::accept(byte* msg_buf, bool crt_c) {
 	return f;
 }
 
+bool j1850::easy_send(int size, ...){
+	if (size == 0) return false;
+
+	byte *buffer = new byte[size];
+	bool result = false;
+  	va_list ap;
+
+  	va_start(ap, size);
+
+  	for(int i = 0; i < size; i++)  {
+    	buffer[i] = va_arg(ap, int);
+  	}
+
+  	va_end (ap);
+
+  	result = send(buffer, size);
+  	delete [] buffer;
+	return result;
+}
+
 bool j1850::send(byte *msg_buf, int nbytes) {	
 	//если не выполненна инициализация - уходим
 	if(!if_init) return false;
@@ -247,6 +267,7 @@ void j1850::monitor(void) {
 void j1850::sendToUART(const char* header, int rx_nbyte, byte *msg_buf) {
 	Serial.print(header);
 	for (int i = 0; i < rx_nbyte; i++) {
+		if (msg_buf[i] < 0x10) Serial.print(0);
 		Serial.print(msg_buf[i], HEX);
 		if(i == (rx_nbyte - 1)){
 			Serial.print("\n");

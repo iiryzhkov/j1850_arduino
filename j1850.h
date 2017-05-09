@@ -79,6 +79,6 @@ public:
 	void init(int, int, bool monitor_ = false);
 	bool accept(byte*, bool crt = false);
 	bool send(byte*, int);
+	bool easy_send(int size, ...);
 };
-
 #endif
