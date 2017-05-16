@@ -340,9 +340,9 @@ void j1850::tests(void)
 	Serial.print("----Start timer test----\n");
 	Serial.print("F_CPU = ");
 	Serial.print(F_CPU);
-	Serial.print("Hz\n100us = ");
+	Serial.print(" Hz\n100us = ");
 	Serial.print(WAIT_100us);
-	Serial.print("cycles\n\n");
+	Serial.print(" cycles\n\n");
 
 	for (int i = 10; i < 110; i += 10)
 	{
