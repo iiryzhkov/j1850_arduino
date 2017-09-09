@@ -367,7 +367,7 @@ void j1850::start_timer(void)
 	time_tmp = micros();
 }
 
-unsigned long j1850::read_timer(void)
+int j1850::read_timer(void)
 {
 	return micros() - time_tmp;
 }

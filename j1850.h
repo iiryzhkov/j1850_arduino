@@ -29,32 +29,33 @@
 class j1850
 {
   private:
-	int in_pin;
-	int out_pin;
 	bool if_init = false;
-	bool review;
-	unsigned long time_tmp = 0;	
-	int mode;
-	byte *rx_msg_buf;
-	int rx_nbyte;
-	byte *tx_msg_buf;
-	int tx_nbyte;
+	bool review = false;
+	int in_pin = 0;
+	int out_pin = 0;
+	int mode = 0;
+	int rx_nbyte = 0;
+	int tx_nbyte = 0;
+	byte *rx_msg_buf = 0x00;
+	byte *tx_msg_buf = 0x00;
+	unsigned long time_tmp = 0;
+
 	void start_timer(void);
-	unsigned long read_timer(void);
 	void monitor(void);
 	void sendToUART(const char *, int, byte *);
 	void tests(void);
 	void active(void);
 	void passive(void);
 	bool is_active(void);
-	byte crc(byte *, int);
 	bool recv_msg(byte *);
 	bool send_msg(byte *, int);
+	int read_timer(void);
+	byte crc(byte *, int);
   public:
-	int message;
 	void init(int, int, bool monitor_ = false);
 	bool accept(byte *, bool crt = false);
 	bool send(byte *, int);
 	bool easy_send(int size, ...);
+	int message;
 };
 #endif
