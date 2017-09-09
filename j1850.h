@@ -26,8 +26,7 @@
 #define ERROR_SIMBOLE_WAS_NOT_SHORT 7
 #define ERROR_ACCEPT_CRC 8
 
-class j1850
-{
+class j1850 {
   private:
 	bool if_init = false;
 	bool review = false;
