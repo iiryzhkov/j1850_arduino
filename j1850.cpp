@@ -1,6 +1,5 @@
 #include "j1850.h"
 #include <Arduino.h>
-#include "timer.h"
 
 void j1850::init(int in_pin_, int out_pin_, bool review_)
 {
@@ -43,7 +42,7 @@ bool j1850::accept(byte *msg_buf, bool crt_c)
 		if (msg_buf[rx_nbyte - 1] != crc(msg_buf, rx_nbyte - 1))
 		{
 			f = false;
-			messege = ERROR_ACCEPT_CRC;
+			message = ERROR_ACCEPT_CRC;
 		}
 	}
 
@@ -115,8 +114,7 @@ bool j1850::recv_msg(byte *msg_buf)
 	{
 		if (read_timer() > WAIT_100us)
 		{
-			stop_timer();
-			messege = ERROR_NO_RESPONDS_WITHIN_100US;
+			message = ERROR_NO_RESPONDS_WITHIN_100US;
 			return false;
 		}
 	}
@@ -126,16 +124,14 @@ bool j1850::recv_msg(byte *msg_buf)
 	{
 		if (read_timer() > RX_SOF_MAX)
 		{
-			messege = ERROR_ON_SOF_TIMEOUT;
+			message = ERROR_ON_SOF_TIMEOUT;
 			return false;
 		}
 	}
 
-	stop_timer();
-
 	if (read_timer() < RX_SOF_MIN)
 	{
-		messege = ERROR_SIMBOLE_WAS_NOT_SOF;
+		message = ERROR_SIMBOLE_WAS_NOT_SOF;
 		return false;
 	}
 
@@ -152,9 +148,8 @@ bool j1850::recv_msg(byte *msg_buf)
 			{
 				if (read_timer() > RX_EOD_MIN)
 				{
-					stop_timer();
 					rx_nbyte = nbytes;
-					messege = MESSEGE_ACCEPT_OK;
+					message = MESSEGE_ACCEPT_OK;
 					return true;
 				}
 			}
@@ -165,8 +160,7 @@ bool j1850::recv_msg(byte *msg_buf)
 
 			if (tcnt1_buf < RX_SHORT_MIN)
 			{
-				stop_timer();
-				messege = ERROR_SIMBOLE_WAS_NOT_SHORT;
+				message = ERROR_SIMBOLE_WAS_NOT_SHORT;
 				return false;
 			}
 
@@ -177,15 +171,11 @@ bool j1850::recv_msg(byte *msg_buf)
 				*msg_buf |= 1;
 
 		} while (--nbits);
-
 		++msg_buf;
 	}
 
-	stop_timer();
-
 	rx_nbyte = nbytes;
-	messege = MESSEGE_ACCEPT_OK;
-
+	message = MESSEGE_ACCEPT_OK;
 	return true;
 }
 
@@ -193,13 +183,12 @@ bool j1850::send_msg(byte *msg_buf, int nbytes)
 {
 	int nbits, delay;
 	byte temp_byte;
-
 	tx_msg_buf = msg_buf;
 	tx_nbyte = nbytes;
 
 	if (nbytes > 12)
 	{
-		messege = ERROR_MESSEGE_TO_LONG;
+		message = ERROR_MESSEGE_TO_LONG;
 		return false;
 	}
 
@@ -210,11 +199,8 @@ bool j1850::send_msg(byte *msg_buf, int nbytes)
 			start_timer();
 	}
 
-	start_timer();
 	active();
-
-	while (read_timer() < TX_SOF)
-		;
+	delayMicroseconds(TX_SOF);
 	do
 	{
 		temp_byte = *msg_buf;
@@ -224,18 +210,12 @@ bool j1850::send_msg(byte *msg_buf, int nbytes)
 			if (nbits & 1)
 			{
 				passive();
-				start_timer();
-				delay = (temp_byte & 0x80) ? TX_LONG : TX_SHORT;
-				while (read_timer() < delay)
-					;
+				delayMicroseconds((temp_byte & 0x80) ? TX_LONG : TX_SHORT);
 			}
 			else
 			{
 				active();
-				start_timer();
-				delay = (temp_byte & 0x80) ? TX_SHORT : TX_LONG;
-				while (read_timer() < delay)
-					;
+				delayMicroseconds((temp_byte & 0x80) ? TX_SHORT : TX_LONG);
 			}
 			temp_byte <<= 1;
 		}
@@ -243,15 +223,8 @@ bool j1850::send_msg(byte *msg_buf, int nbytes)
 	} while (--nbytes);
 
 	passive();
-	start_timer();
-
-	while (read_timer() <= TX_EOF)
-		;
-
-	stop_timer();
-
-	messege = MESSEGE_SEND_OK;
-
+	delayMicroseconds(TX_EOF);
+	message = MESSEGE_SEND_OK;
 	return true;
 }
 
@@ -268,7 +241,7 @@ void j1850::monitor(void)
 
 	//режим - только RX
 	case 4:
-		if (MESSEGE_ACCEPT_OK == messege)
+		if (MESSEGE_ACCEPT_OK == message)
 		{
 			sendToUART("RX: ", rx_nbyte, rx_msg_buf);
 		}
@@ -276,7 +249,7 @@ void j1850::monitor(void)
 
 	//режим - только TX
 	case 3:
-		if (MESSEGE_SEND_OK == messege)
+		if (MESSEGE_SEND_OK == message)
 		{
 			sendToUART("TX: ", tx_nbyte, tx_msg_buf);
 		}
@@ -284,20 +257,20 @@ void j1850::monitor(void)
 
 	//режим - только системные события
 	case 2:
-		if (old_messege != messege)
+		if (old_messege != message)
 		{
-			Serial.println(messege);
-			old_messege = messege;
+			Serial.println(message);
+			old_messege = message;
 		}
 		break;
 
 	//режим - RX\TX
 	case 1:
-		if (MESSEGE_SEND_OK == messege)
+		if (MESSEGE_SEND_OK == message)
 		{
 			sendToUART("TX: ", tx_nbyte, tx_msg_buf);
 		}
-		if (MESSEGE_ACCEPT_OK == messege)
+		if (MESSEGE_ACCEPT_OK == message)
 		{
 			sendToUART("RX: ", rx_nbyte, rx_msg_buf);
 		}
@@ -305,7 +278,7 @@ void j1850::monitor(void)
 
 	//режим выбора сообщений по заголовку
 	default:
-		if ((MESSEGE_ACCEPT_OK == messege) && (mode == rx_msg_buf[0]))
+		if ((MESSEGE_ACCEPT_OK == message) && (mode == rx_msg_buf[0]))
 		{
 			sendToUART("RX: ", rx_nbyte, rx_msg_buf);
 		}
@@ -336,37 +309,6 @@ void j1850::tests(void)
 {
 	char fail[] = "Test failure!\n";
 	char ok[] = "Test succes!\n";
-	//тест счетчика
-	Serial.print("----Start timer test----\n");
-	Serial.print("F_CPU = ");
-	Serial.print(F_CPU);
-	Serial.print(" Hz\n100us = ");
-	Serial.print(WAIT_100us);
-	Serial.print(" cycles\n\n");
-
-	for (int i = 10; i < 110; i += 10)
-	{
-		start_timer();
-		delayMicroseconds(i);
-		stop_timer();
-
-		Serial.print(i);
-		Serial.print("ms ~ ");
-		Serial.print(read_timer());
-		Serial.print(" cycles\n");
-	}
-
-	if (read_timer() == WAIT_100us)
-	{
-		Serial.print(ok);
-	}
-	else
-	{
-		Serial.print(fail);
-	}
-
-	Serial.print("----End timer test----\n\n");
-
 	//тест i\o
 	Serial.print("----Start I/O test----\n");
 	if (!is_active())
@@ -418,4 +360,14 @@ byte j1850::crc(byte *msg_buf, int nbytes)
 	}
 	crc ^= 0xFF;
 	return crc;
+}
+
+void j1850::start_timer(void)
+{
+	time_tmp = micros();
+}
+
+unsigned long j1850::read_timer(void)
+{
+	return micros() - time_tmp;
 }
