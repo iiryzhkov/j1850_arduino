@@ -61,9 +61,8 @@ bool j1850::easy_send(int size, ...) {
 
 	va_start(ap, size);
 
-	for (int i = 0; i < size; i++) {
+	for (int i = 0; i < size; i++)
 		buffer[i] = va_arg(ap, int);
-	}
 
 	va_end(ap);
 
