@@ -2,38 +2,29 @@
 #include <Arduino.h>
 
 void j1850::init(int in_pin_, int out_pin_, bool review_) {
-	// инициализация параметров
 	out_pin = out_pin_;
 	in_pin = in_pin_;
 	review = review_;
 
-	//если включен мониторинг, активируем Serial
 	if (review_) {
 		Serial.begin(9600);
 		mode = 1;
 	}
 
-	//инициализация I\O
 	pinMode(in_pin_, INPUT_PULLUP);
 	pinMode(out_pin_, OUTPUT);
 
-	//переключаем порт передачи в положение 0
 	passive();
 
-	//инициализация пройдена
 	if_init = true;
 }
 
 bool j1850::accept(byte *msg_buf, bool crt_c) {
-	//если не выполненна инициализация - уходим
 	if (!if_init)
 		return false;
 
-	//прием данных
 	bool f = recv_msg(msg_buf);
 
-	//вызывается при положительном результате
-	//приема и при включении данной опции
 	if ((crt_c) && (f)) {
 		if (msg_buf[rx_nbyte - 1] != crc(msg_buf, rx_nbyte - 1)) {
 			f = false;
@@ -41,8 +32,6 @@ bool j1850::accept(byte *msg_buf, bool crt_c) {
 		}
 	}
 
-	//мониторинг
-	//считывание команд, а так же сам мониторинг
 	if (review) {
 		if (Serial.available() >= 2)
 			mode = Serial.parseInt();
@@ -72,18 +61,14 @@ bool j1850::easy_send(int size, ...) {
 }
 
 bool j1850::send(byte *msg_buf, int nbytes) {
-	//если не выполненна инициализация - уходим
 	if (!if_init)
 		return false;
 
-	//Добавляем к массиву передаваемых данных crc сумму
 	msg_buf[nbytes] = crc(msg_buf, nbytes);
 	nbytes++;
 
-	//передача данных
 	bool f = send_msg(msg_buf, nbytes);
 
-	//если надо, внключаем мониторинг
 	if (review)
 		monitor();
 	return f;
@@ -198,25 +183,25 @@ bool j1850::send_msg(byte *msg_buf, int nbytes) {
 void j1850::monitor(void) {
 	static byte old_messege;
 	switch (mode) {
-		//режим тестирования
+		//tests
 		case 5:
 			tests();
 			mode = 1; //default mode
 			break;
 
-		//режим - только RX
+		//RX
 		case 4:
 			if (MESSEGE_ACCEPT_OK == message)
 				sendToUART("RX: ", rx_nbyte, rx_msg_buf);
 			break;
 
-		//режим - только TX
+		//TX
 		case 3:
 			if (MESSEGE_SEND_OK == message)
 				sendToUART("TX: ", tx_nbyte, tx_msg_buf);
 			break;
 
-		//режим - только системные события
+		//status codes
 		case 2:
 			if (old_messege != message) {
 				Serial.println(message);
@@ -224,7 +209,7 @@ void j1850::monitor(void) {
 			}
 			break;
 
-		//режим - RX\TX
+		//RX\TX
 		case 1:
 			if (MESSEGE_SEND_OK == message)
 				sendToUART("TX: ", tx_nbyte, tx_msg_buf);
@@ -232,7 +217,7 @@ void j1850::monitor(void) {
 				sendToUART("RX: ", rx_nbyte, rx_msg_buf);
 			break;
 
-		//режим выбора сообщений по заголовку
+		// filtering messages by the first byte
 		default:
 			if ((MESSEGE_ACCEPT_OK == message) && (mode == rx_msg_buf[0]))
 				sendToUART("RX: ", rx_nbyte, rx_msg_buf);

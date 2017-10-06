@@ -33,10 +33,8 @@ class j1850 {
 	int in_pin = 0;
 	int out_pin = 0;
 	int mode = 0;
-	int rx_nbyte = 0;
-	int tx_nbyte = 0;
-	byte *rx_msg_buf = 0x00;
-	byte *tx_msg_buf = 0x00;
+	byte *rx_msg_buf;
+	byte *tx_msg_buf;
 	unsigned long time_tmp = 0;
 
 	void start_timer(void);
@@ -56,5 +54,7 @@ class j1850 {
 	bool send(byte *, int);
 	bool easy_send(int size, ...);
 	int message;
+	int rx_nbyte = 0;
+	int tx_nbyte = 0;
 };
 #endif
