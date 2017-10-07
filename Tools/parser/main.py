@@ -38,11 +38,11 @@ def SerialParser(config):
     return output_str
 
 
-def komporator(config , enclosed = False):
+def comparator(config , enclosed = False):
 
     # Инициализация статической переменной, для хранения предыдущего сообщения
-    if not hasattr(komporator, 'old_str'):
-        komporator.old_str = ''
+    if not hasattr(comparator, 'old_str'):
+        comparator.old_str = ''
 
     # Читаем сообщение
     data_str = SerialParser(config)
@@ -52,8 +52,8 @@ def komporator(config , enclosed = False):
     # Если сообщения нет в пуле
     if(pull.count(data_str) == 0):
         # Выводим предыдущее сообщение
-        if not enclosed and komporator.old_str:
-            logging.info("OLD " + komporator.old_str)
+        if not enclosed and comparator.old_str:
+            logging.info("OLD " + comparator.old_str)
         
         # Если стоит параметр logger_pull пишем в лог
         if config['logger_pull']:
@@ -63,21 +63,21 @@ def komporator(config , enclosed = False):
         pull.append(data_str)
 
         # Обновляем предыдущую строку 
-        komporator.old_str = data_str
+        comparator.old_str = data_str
 
         # Выводим сообщение
         logging.info("NEW " + data_str)
 
-        # Зпускаем следующую интерацию 
-        komporator(config, True)
+        # Запускаем следующую интерацию 
+        comparator(config, True)
     else:
 
         # Если есть в пуле то выводим его как следующее
         # при условии что мы в рекурсии
-        if enclosed and data_str != komporator.old_str:
+        if enclosed and data_str != comparator.old_str:
             logging.info("FUT " + data_str)
             logging.info("-" * 20 + "\n")
-        komporator.old_str = data_str
+        comparator.old_str = data_str
         
 
 def init_port(config):
@@ -105,7 +105,7 @@ def print_in_file(file_name, data):
     except Exception as e:
         logging.warning('Ошибка записи в: ' + file_name)
 
-def init_cofig(name):
+def init_config(name):
     config = {}
     try:
         with open(name, 'r', encoding='utf-8') as fh:
@@ -132,9 +132,9 @@ def autopull(_pull, filename = 'autopull.txt'):
         _pull.clear()
     else:
         if _pull:
-            logging.info('Успешное чтение. Добавленно %s записей.' % len(pull))
+            logging.info('Успешное чтение. Добавлено %s записей.' % len(pull))
         else:
-            logging.warning('Ничего не добавленно, вероятно файл %s пуст' % filename)
+            logging.warning('Ничего не добавлено, вероятно файл %s пуст' % filename)
     finally:
         f.close()
 
@@ -155,7 +155,7 @@ def init_loggs(configб):
         logging.info('Логирование успешно инициализировано')
 
 
-config = init_cofig('config.json')
+config = init_config('config.json')
 init_loggs(config)
 ser = init_port(config)
 
@@ -164,5 +164,5 @@ if config['auto_pull']:
 
 
 while 1 :
-    komporator(config)
+    comparator(config)
 

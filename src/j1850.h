@@ -17,13 +17,13 @@
 #define RX_EOD_MIN 163
 #define RX_IFS_MIN 280
 
-#define MESSEGE_SEND_OK 1
-#define MESSEGE_ACCEPT_OK 2
-#define ERROR_MESSEGE_TO_LONG 3
+#define MESSAGE_SEND_OK 1
+#define MESSAGE_ACCEPT_OK 2
+#define ERROR_MESSAGE_TO_LONG 3
 #define ERROR_NO_RESPONDS_WITHIN_100US 4
 #define ERROR_ON_SOF_TIMEOUT 5
-#define ERROR_SIMBOLE_WAS_NOT_SOF 6
-#define ERROR_SIMBOLE_WAS_NOT_SHORT 7
+#define ERROR_SYMBOL_WAS_NOT_SOF 6
+#define ERROR_SYMBOL_WAS_NOT_SHORT 7
 #define ERROR_ACCEPT_CRC 8
 
 class j1850 {
@@ -33,10 +33,8 @@ class j1850 {
 	int in_pin = 0;
 	int out_pin = 0;
 	int mode = 0;
-	int rx_nbyte = 0;
-	int tx_nbyte = 0;
-	byte *rx_msg_buf = 0x00;
-	byte *tx_msg_buf = 0x00;
+	byte *rx_msg_buf;
+	byte *tx_msg_buf;
 	unsigned long time_tmp = 0;
 
 	void start_timer(void);
@@ -56,5 +54,7 @@ class j1850 {
 	bool send(byte *, int);
 	bool easy_send(int size, ...);
 	int message;
+	int rx_nbyte = 0;
+	int tx_nbyte = 0;
 };
 #endif
