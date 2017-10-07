@@ -1,6 +1,6 @@
 # J1850 lib
 
-**The library for arduino to work with the protocol j1850. Allows you to receive and send messages, work with them and output them to the console.**
+**The library for arduino is working with the protocol j1850. It allows you to receive and send messages, work with it and output it to the console.**
 
 ## API
 
@@ -9,7 +9,7 @@
 `#include <j1850.h>`
 
 Create an instance of the class
-for example, create the object 'j'
+for example, create the object 'j'.
 
 `j1850 j;`
 
@@ -27,14 +27,13 @@ for example:
 
 
 #### Debugging mode
-Allows you to output to the console: incoming messages, outgoing messages, status codes, run tests, filtering messages by the first byte.
+It allows you to output incoming messages, outgoing messages, status codes and run tests. 
 To change the modes, you need to send to the console:
-- 1 (default) -  incoming and outgoing messages
-- 2 - status codes
-- 3 - incoming messages
-- 4 - outgoing messages
-- 5 - tests
-- from 6 to 255 - filtering messages by the first byte.
+- 1 (default) -  incoming and outgoing messages;
+- 2 - status codes;
+- 3 - incoming messages;
+- 4 - outgoing messages;
+- 5 - tests;
 
 ### Read the messages
 
@@ -60,14 +59,14 @@ the class property **'rx_nbyte'** will contain the number of characters.
 
 ### Sending a message
 
-To send a message there are two methods:
+There are two methods to send a message:
 
 `bool j1850::send(byte *tx_buf, int nbytes)`
 
 - tx_buf - send buffer
 - nbytes - number of characters sent (0 - 11)
 
-returns the receive status:
+returns the sending status:
 - 1 - successfully
 - 0 - failure
 
@@ -83,7 +82,7 @@ and
 - size - number of characters sent (0 - 11)
 - sent characters
 
-returns the receive status:
+returns the sending status:
 - 1 - successfully
 - 0 - failure
 
@@ -91,17 +90,17 @@ for example:
 
 `j.easy_send(3, 0x00, 0x01, 0x03)`
 
-At the end of the message the crc sum will be automatically added.
+In the end of the message the crc sum will be automatically added.
 The number of sent characters will be written in **'tx_nbyte'**
 
 ### Status codes
-The **'message'** property contains event codes:
+The **'message'*** property contains event codes:
 
-- 1 - MESSEGE_SEND_OK
-- 2 - MESSEGE_ACCEPT_OK
-- 3 - ERROR_MESSEGE_TO_LONG
+- 1 - MESSAGE_SEND_OK
+- 2 - MESSAGE_ACCEPT_OK
+- 3 - ERROR_MESSAGE_TO_LONG
 - 4 - ERROR_NO_RESPONDS_WITHIN_100US
 - 5 - ERROR_ON_SOF_TIMEOUT
-- 6 - ERROR_SIMBOLE_WAS_NOT_SOF
-- 7 - ERROR_SIMBOLE_WAS_NOT_SHORT
+- 6 - ERROR_SYMBOL_WAS_NOT_SOF
+- 7 - ERROR_SYMBOL_WAS_NOT_SHORT
 - 8 - define ERROR_ACCEPT_CRC

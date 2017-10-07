@@ -96,7 +96,7 @@ bool j1850::recv_msg(byte *msg_buf) {
 	}
 
 	if (read_timer() < RX_SOF_MIN) {
-		message = ERROR_SIMBOLE_WAS_NOT_SOF;
+		message = ERROR_SYMBOL_WAS_NOT_SOF;
 		return false;
 	}
 
@@ -110,7 +110,7 @@ bool j1850::recv_msg(byte *msg_buf) {
 			while (is_active() == bit_state) {
 				if (read_timer() > RX_EOD_MIN) {
 					rx_nbyte = nbytes;
-					message = MESSEGE_ACCEPT_OK;
+					message = MESSAGE_ACCEPT_OK;
 					return true;
 				}
 			}
@@ -120,7 +120,7 @@ bool j1850::recv_msg(byte *msg_buf) {
 			start_timer();
 
 			if (tcnt1_buf < RX_SHORT_MIN) {
-				message = ERROR_SIMBOLE_WAS_NOT_SHORT;
+				message = ERROR_SYMBOL_WAS_NOT_SHORT;
 				return false;
 			}
 
@@ -135,7 +135,7 @@ bool j1850::recv_msg(byte *msg_buf) {
 	}
 
 	rx_nbyte = nbytes;
-	message = MESSEGE_ACCEPT_OK;
+	message = MESSAGE_ACCEPT_OK;
 	return true;
 }
 
@@ -146,7 +146,7 @@ bool j1850::send_msg(byte *msg_buf, int nbytes) {
 	tx_nbyte = nbytes;
 
 	if (nbytes > 12) {
-		message = ERROR_MESSEGE_TO_LONG;
+		message = ERROR_MESSAGE_TO_LONG;
 		return false;
 	}
 
@@ -176,12 +176,13 @@ bool j1850::send_msg(byte *msg_buf, int nbytes) {
 
 	passive();
 	delayMicroseconds(TX_EOF);
-	message = MESSEGE_SEND_OK;
+	message = MESSAGE_SEND_OK;
 	return true;
 }
 
 void j1850::monitor(void) {
-	static byte old_messege;
+	static int old_message;
+	
 	switch (mode) {
 		//tests
 		case 5:
@@ -191,36 +192,33 @@ void j1850::monitor(void) {
 
 		//RX
 		case 4:
-			if (MESSEGE_ACCEPT_OK == message)
+			if (MESSAGE_ACCEPT_OK == message)
 				sendToUART("RX: ", rx_nbyte, rx_msg_buf);
 			break;
 
 		//TX
 		case 3:
-			if (MESSEGE_SEND_OK == message)
+			if (MESSAGE_SEND_OK == message)
 				sendToUART("TX: ", tx_nbyte, tx_msg_buf);
 			break;
 
 		//status codes
 		case 2:
-			if (old_messege != message) {
+			if (old_message != message) {
 				Serial.println(message);
-				old_messege = message;
+				old_message = message;
 			}
 			break;
 
 		//RX\TX
 		case 1:
-			if (MESSEGE_SEND_OK == message)
+			if (MESSAGE_SEND_OK == message)
 				sendToUART("TX: ", tx_nbyte, tx_msg_buf);
-			if (MESSEGE_ACCEPT_OK == message)
+			if (MESSAGE_ACCEPT_OK == message)
 				sendToUART("RX: ", rx_nbyte, rx_msg_buf);
 			break;
 
-		// filtering messages by the first byte
 		default:
-			if ((MESSEGE_ACCEPT_OK == message) && (mode == rx_msg_buf[0]))
-				sendToUART("RX: ", rx_nbyte, rx_msg_buf);
 			break;
 	}
 }
@@ -243,7 +241,7 @@ void j1850::sendToUART(const char *header, int rx_nbyte, byte *msg_buf) {
 
 void j1850::tests(void) {
 	char fail[] = "Test failure!\n";
-	char ok[] = "Test succes!\n";
+	char ok[] = "Test success!\n";
 	//тест i\o
 	Serial.print("----Start I/O test----\n");
 	if (!is_active()) {
