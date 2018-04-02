@@ -1,5 +1,6 @@
 #include "j1850.h"
 #include <Arduino.h>
+#include <stdarg.h>
 
 void j1850::init(int in_pin_, int out_pin_, bool review_) {
 	out_pin = out_pin_;
