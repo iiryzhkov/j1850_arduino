@@ -34,7 +34,7 @@ bool j1850::accept(byte *msg_buf, bool crt_c) {
 	}
 
 	if (review) {
-		if (Serial.available() >= 2)
+		if (Serial.available() == 1)
 			mode = Serial.parseInt();
 		monitor();
 	}
