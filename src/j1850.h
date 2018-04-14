@@ -29,13 +29,13 @@
 class j1850 {
   private:
 	bool if_init = false;
-	bool review = false;
 	int in_pin = 0;
 	int out_pin = 0;
-	int mode = 0;
+	int monitoring_mode = 0;
 	byte *rx_msg_buf;
 	byte *tx_msg_buf;
 	unsigned long time_tmp = 0;
+	Print* pr;
 
 	void start_timer(void);
 	void monitor(void);
@@ -49,10 +49,12 @@ class j1850 {
 	int read_timer(void);
 	byte crc(byte *, int);
   public:
-	void init(int, int, bool monitor_ = false);
+	void init(int, int, Print* pr_ = &Serial);
+	void set_monitoring(int mod = 1);
 	bool accept(byte *, bool crt = false);
 	bool send(byte *, int);
 	bool easy_send(int size, ...);
+
 	int message;
 	int rx_nbyte = 0;
 	int tx_nbyte = 0;
