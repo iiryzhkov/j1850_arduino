@@ -24,9 +24,7 @@ void j1850_asynch_exc::reset_loop(void) {
   position = 0;
 }
 
-
 unsigned char j1850_asynch_exc::crc(volatile unsigned char *msg_buf, volatile int nbytes) {
-  return 0xD2;
   unsigned char crc = 0xFF;
   while (nbytes--){
     crc ^= *msg_buf++;
@@ -83,7 +81,7 @@ void j1850_asynch_exc::__active(long tmp) {
     return;
   }
   if (position == 2) {
-    if (tmp > RX_SOF_MIN) {
+    if (tmp > RX_EOF_MIN) {
       reset_loop();
       position = 1;
       message = ERROR_ACCEPT_CRC;

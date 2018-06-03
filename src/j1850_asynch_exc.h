@@ -15,6 +15,8 @@
 #define RX_SOF_MIN 163
 #define RX_SOF_MAX 239
 #define RX_EOD_MIN 163
+#define RX_EOD_MAX 239
+#define RX_EOF_MIN 239
 #define RX_IFS_MIN 280
 
 #define MESSAGE_SEND_OK 1
