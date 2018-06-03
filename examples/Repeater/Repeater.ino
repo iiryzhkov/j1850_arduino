@@ -4,8 +4,9 @@
 j1850 j;
 
 void setup() {
-    //Initialize. RX pin, TX pin, monitoring ON
-    j.init(10, 11, true);
+    //Initialize. RX pin, TX pin
+    j.init(10, 11, &Serial);
+    j.set_monitoring(1);
 }
 
 void loop() {

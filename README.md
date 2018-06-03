@@ -15,25 +15,30 @@ for example, create the object 'j'.
 
 ### Init
 
-`void j1850::init(int RX_PIN, int TX_PIN, bool debug)`
+`void j1850::init(int RX_PIN, int TX_PIN, Print* pr)`
 
 - RX_PIN - port for incoming signal
 - TX_PIN - port for outgoing signal
-- debug - enable / disable debugging mode (default false)
+- pr -     serial port output class (for example: Serial - default or SerialUSB) 
 
 for example:
 
-`j.init(10, 11, true);`
+`j.init(10, 11, &SerialUSB);`
 
 
 #### Debugging mode
+
+`j.set_monitoring(int mode)`
+
+- mode - data output mode to the serial port 
+
 It allows you to output incoming messages, outgoing messages, status codes and run tests. 
-To change the modes, you need to send to the console:
-- 1 (default) -  incoming and outgoing messages;
+- 0 - turn off monitor;
+- 1 - incoming and outgoing messages;
 - 2 - status codes;
 - 3 - incoming messages;
 - 4 - outgoing messages;
-- 5 - tests;
+- 5 - tests.
 
 ### Read the messages
 
