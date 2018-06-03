@@ -12,8 +12,10 @@
 #define RX_SHORT_MAX 96
 #define RX_LONG_MIN 96
 #define RX_LONG_MAX 163
-#define RX_SOF_MIN 163 // == EOD
-#define RX_SOF_MAX 239 // == EOD
+#define RX_SOF_MIN 163
+#define RX_SOF_MAX 239
+#define RX_EOD_MIN 163
+#define RX_IFS_MIN 280
 
 #define MESSAGE_SEND_OK 1
 #define MESSAGE_ACCEPT_OK 2
@@ -31,23 +33,17 @@ class j1850_asynch_exc {
   }
 
   public:
-    // volatile unsigned long ta[3] = {0,0, 0};
-    // volatile unsigned long old_ta[3] = {0,0, 0};
-
-
     volatile uint8_t bytes        = 0;//12
     volatile uint8_t message      = 0;//8
     volatile byte accept_buf[12]  = {0x00};
     void asynch_init(uint8_t interrupt);
     void reset_accept(void);
     void __separator(void);
-
   protected:
-    uint8_t pin_in = 0;
+    uint8_t in_pin = 0;
     void interrupt_on(void);
     void interrupt_off(void);
     unsigned char crc(volatile unsigned char *msg_buf, volatile int nbytes);
-  
   private:
     volatile uint8_t position     = 0;//2
     volatile uint8_t bites        = 0;//8

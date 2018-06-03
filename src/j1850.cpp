@@ -2,19 +2,25 @@
 #include <Arduino.h>
 #include <stdarg.h>
 
-void j1850::init(int in_pin_, int out_pin_, Print* pr_) {
+void j1850::init(int in_pin_, int out_pin_, bool asy_, Print* pr_) {
 	out_pin = out_pin_;
 	in_pin = in_pin_;
 	pr = pr_;
+	asy = asy_;
 
-	pinMode(in_pin_, INPUT_PULLUP);
+	if (asy_){
+		asynch_init(in_pin_);
+	} else {
+		pinMode(in_pin_, INPUT_PULLUP);
+	}
+
 	pinMode(out_pin_, OUTPUT);
 	passive();
 	if_init = true;
 }
 
 bool j1850::accept(byte *msg_buf, bool crt_c) {
-	if (!if_init)
+	if (!if_init || asy)
 		return false;
 
 	bool f = recv_msg(msg_buf);
@@ -151,6 +157,8 @@ bool j1850::send_msg(byte *msg_buf, int nbytes) {
 		return false;
 	}
 
+	if (asy) interrupt_off();
+
 	start_timer();
 	while (read_timer() < RX_IFS_MIN) {
 		if (is_active())
@@ -178,6 +186,7 @@ bool j1850::send_msg(byte *msg_buf, int nbytes) {
 	passive();
 	delayMicroseconds(TX_EOF);
 	message = MESSAGE_SEND_OK;
+	if (asy) interrupt_on();
 	return true;
 }
 
@@ -265,17 +274,6 @@ void j1850::passive(void) {
 
 bool j1850::is_active(void) {
 	return !digitalRead(in_pin);
-}
-
-byte j1850::crc(byte *msg_buf, int nbytes) {
-	byte crc = 0xFF;
-	while (nbytes--) {
-		crc ^= *msg_buf++;
-		for (int i = 0; i < 8; i++)
-			crc = crc & 0x80 ? (crc << 1) ^ 0x1D : crc << 1;
-	}
-	crc ^= 0xFF;
-	return crc;
 }
 
 void j1850::start_timer(void) {

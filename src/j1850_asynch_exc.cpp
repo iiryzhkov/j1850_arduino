@@ -3,16 +3,16 @@
 j1850_asynch_exc * j1850_asynch_exc::instances = NULL;
 
 void j1850_asynch_exc::interrupt_on(void){
-  attachInterrupt(digitalPinToInterrupt(pin_in), ISP, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(in_pin), ISP, CHANGE);
 }
 
 void j1850_asynch_exc::interrupt_off(void){
-  detachInterrupt(pin_in);
+  detachInterrupt(in_pin);
 }
 
 void j1850_asynch_exc::asynch_init(uint8_t interrupt) {
-  pin_in = interrupt;
-  pinMode(pin_in, INPUT_PULLUP);
+  in_pin = interrupt;
+  pinMode(in_pin, INPUT_PULLUP);
   reset_accept();
   interrupt_on();
   instances = this;
@@ -104,10 +104,11 @@ void j1850_asynch_exc::__separator(void) {
   unsigned long period, time_data;
 
   bool pos = false;
-  static bool init = false;
+  // static bool pos = false;
+  // static bool init = false;
 
   // if (!init) {
-  pos = digitalRead(pin_in);
+  pos = digitalRead(in_pin);
   //   init = true;
   // }
 
@@ -119,12 +120,9 @@ void j1850_asynch_exc::__separator(void) {
   }
   old_time = time_data;
 
-  // ta[0] = period;
   if (pos) {
-    // ta[1] = 0;
     __passive(period);
   } else {
-    // ta[1] = 1;
     __active(period);
   }
   // pos = !pos;
