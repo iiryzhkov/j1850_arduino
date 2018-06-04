@@ -15,10 +15,10 @@ void loop() {
   int tmp_len;
   //Receiving a message
   if (j.bytes > 0) {
-    for(int i = 0; i < j.bytes; i++){
+    for(int i = 0; i < j.bytes - 1; i++){
       tmp_buf[i] = j.accept_buf[i];
     }
-    tmp_len = j.bytes;
+    tmp_len = j.bytes - 1;
     //Sending the received message
     j.send(tmp_buf, tmp_len);
     j.reset_accept();
