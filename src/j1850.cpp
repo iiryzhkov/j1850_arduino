@@ -275,11 +275,3 @@ void j1850::passive(void) {
 bool j1850::is_active(void) {
 	return !digitalRead(in_pin);
 }
-
-void j1850::start_timer(void) {
-	time_tmp = micros();
-}
-
-int j1850::read_timer(void) {
-	return micros() - time_tmp;
-}

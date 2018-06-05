@@ -23,4 +23,8 @@ void loop() {
     j.send(tmp_buf, tmp_len);
     j.reset_accept();
   }
+  if (j.message != 0){
+    		SerialUSB.println(j.message);
+        j.message = 0;
+  }
 } 

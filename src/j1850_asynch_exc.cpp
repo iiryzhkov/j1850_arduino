@@ -3,22 +3,23 @@
 j1850_asynch_exc * j1850_asynch_exc::instances = NULL;
 
 void j1850_asynch_exc::interrupt_on(void){
-  attachInterrupt(digitalPinToInterrupt(in_pin), ISP, CHANGE);
+  interrupt_locking = false;
 }
 
 void j1850_asynch_exc::interrupt_off(void){
-  detachInterrupt(in_pin);
+  interrupt_locking = true;
 }
 
 void j1850_asynch_exc::asynch_init(uint8_t interrupt) {
   in_pin = interrupt;
   pinMode(in_pin, INPUT_PULLUP);
-  reset_accept();
+  attachInterrupt(digitalPinToInterrupt(in_pin), ISP, CHANGE);
   interrupt_on();
   instances = this;
 }
 
 void j1850_asynch_exc::reset_loop(void) {
+  tmp_byte = 0x00;
   bites = 0;
   accept_bytes = 0;
   position = 0;
@@ -98,38 +99,36 @@ void j1850_asynch_exc::__active(long tmp) {
 }
 
 void j1850_asynch_exc::__separator(void) {
-  static unsigned long old_time = 0;
-  unsigned long period, time_data;
-
-  bool pos = false;
-  // static bool pos = false;
-  // static bool init = false;
-
-  // if (!init) {
-  pos = digitalRead(in_pin);
-  //   init = true;
-  // }
-
-  time_data  = micros();
-  if (time_data <  old_time){
-    period = 1000 - (old_time - time_data);
-  }else{
-    period = time_data - old_time;
-  }
-  old_time = time_data;
+  if (interrupt_locking) return;
+  
+  bool pos = digitalRead(in_pin);
 
   if (pos) {
-    __passive(period);
+    __passive(read_timer());
   } else {
-    __active(period);
+    __active(read_timer());
   }
-  // pos = !pos;
+  start_timer();
 }
 
 void j1850_asynch_exc::reset_accept(void) {
-  bytes = 0;
-  for (uint8_t i = 0; i < 12; i++) {
+  for (uint8_t i = 0; i < accept_bytes; i++) {
     accept_buf[i] = 0x00;
   }
   reset_loop();
+  bytes = 0;
+  message = 0;
+}
+
+void j1850_asynch_exc::start_timer(void) {
+	time_tmp = micros();
+}
+
+unsigned long j1850_asynch_exc::read_timer(void) {
+  unsigned long time_data  = micros();
+  if (time_data <  time_tmp){
+    return 1000 - (time_tmp - time_data);
+  }else{
+    return time_data - time_tmp;
+  }
 }

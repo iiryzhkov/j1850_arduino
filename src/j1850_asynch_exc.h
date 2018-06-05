@@ -44,12 +44,16 @@ class j1850_asynch_exc {
     uint8_t in_pin = 0;
     void interrupt_on(void);
     void interrupt_off(void);
+		void start_timer(void);
+    unsigned long read_timer(void);
     unsigned char crc(volatile unsigned char *msg_buf, volatile int nbytes);
   private:
+  	unsigned long time_tmp = 0;
     volatile uint8_t position     = 0;//2
     volatile uint8_t bites        = 0;//8
     volatile uint8_t accept_bytes = 0;//12
     volatile byte tmp_byte        = 0x00;
+    bool interrupt_locking = false;
     void __passive(long tmp);
     void __active(long tmp);
     void reset_loop(void);
