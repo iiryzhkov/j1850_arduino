@@ -25,11 +25,11 @@ void j1850_asynch_exc::reset_loop(void) {
   position = 0;
 }
 
-unsigned char j1850_asynch_exc::crc(volatile unsigned char *msg_buf, volatile int nbytes) {
+unsigned char j1850_asynch_exc::crc(volatile unsigned char *msg_buf, volatile uint8_t nbytes) {
   unsigned char crc = 0xFF;
   while (nbytes--){
     crc ^= *msg_buf++;
-    for (int i = 0; i < 8; i++){
+    for (uint8_t i = 0; i < 8; i++){
       crc = crc & 0x80 ? (crc << 1) ^ 0x1D : crc << 1;
     }
   }

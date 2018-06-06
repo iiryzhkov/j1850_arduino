@@ -8,28 +8,27 @@ class j1850: public j1850_asynch_exc {
   private:
     bool if_init = false;
     bool asy = false;
-    int out_pin = 0;
-    int monitoring_mode = 0;
+    uint8_t out_pin = 0;
+    uint8_t monitoring_mode = 0;
     byte *rx_msg_buf;
-    byte *tx_msg_buf;
+    volatile byte *tx_msg_buf;
     Print* pr;
 
     void monitor(void);
-    void sendToUART(const char *, int, byte *);
     void tests(void);
     void active(void);
     void passive(void);
     bool is_active(void);
     bool recv_msg(byte *);
-    bool send_msg(byte *, int);
+    bool send_msg(volatile byte *, volatile uint8_t);
   public:
-    void init(int, int, bool asy_ = false, Print* pr_ = &Serial);
-    void set_monitoring(int mod = 1);
+    uint8_t rx_nbyte = 0;
+    uint8_t tx_nbyte = 0;
+    void sendToUART(const char *, volatile uint8_t, volatile byte *);
+    void init(uint8_t, uint8_t, bool asy_ = false, Print* pr_ = &Serial);
+    void set_monitoring(uint8_t mod = 1);
     bool accept(byte *, bool crt = false);
-    bool send(byte *, int);
-    bool easy_send(int size, ...);
-
-    int rx_nbyte = 0;
-    int tx_nbyte = 0;
+    bool send(volatile byte*, volatile uint8_t);
+    bool easy_send(uint8_t size, ...);
 };
 #endif

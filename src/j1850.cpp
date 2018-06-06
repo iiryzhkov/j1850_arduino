@@ -2,7 +2,7 @@
 #include <Arduino.h>
 #include <stdarg.h>
 
-void j1850::init(int in_pin_, int out_pin_, bool asy_, Print* pr_) {
+void j1850::init(uint8_t in_pin_, uint8_t out_pin_, bool asy_, Print* pr_) {
 	out_pin = out_pin_;
 	in_pin = in_pin_;
 	pr = pr_;
@@ -38,7 +38,7 @@ bool j1850::accept(byte *msg_buf, bool crt_c) {
 	return f;
 }
 
-void j1850::set_monitoring(int mode_){
+void j1850::set_monitoring(uint8_t mode_){
 	if((mode_ > 5) or (mode_ < 0)){
 		pr->println("The mode should be from 0 to 5");
 		return;
@@ -46,7 +46,7 @@ void j1850::set_monitoring(int mode_){
 	monitoring_mode = mode_;
 }
 
-bool j1850::easy_send(int size, ...) {
+bool j1850::easy_send(uint8_t size, ...) {
 	if (size == 0)
 		return false;
 
@@ -56,7 +56,7 @@ bool j1850::easy_send(int size, ...) {
 
 	va_start(ap, size);
 
-	for (int i = 0; i < size; i++)
+	for (uint8_t i = 0; i < size; i++)
 		buffer[i] = va_arg(ap, int);
 
 	va_end(ap);
@@ -66,7 +66,7 @@ bool j1850::easy_send(int size, ...) {
 	return result;
 }
 
-bool j1850::send(byte *msg_buf, int nbytes) {
+bool j1850::send(volatile byte *msg_buf, uint8_t volatile nbytes) {
 	if (!if_init)
 		return false;
 
@@ -82,7 +82,7 @@ bool j1850::send(byte *msg_buf, int nbytes) {
 }
 
 bool j1850::recv_msg(byte *msg_buf) {
-	int nbits, nbytes;
+	uint8_t nbits, nbytes;
 	bool bit_state;
 	rx_msg_buf = msg_buf;
 
@@ -146,8 +146,8 @@ bool j1850::recv_msg(byte *msg_buf) {
 	return true;
 }
 
-bool j1850::send_msg(byte *msg_buf, int nbytes) {
-	int nbits;
+bool j1850::send_msg(volatile byte *msg_buf, volatile uint8_t nbytes) {
+	uint8_t nbits;
 	byte temp_byte;
 	tx_msg_buf = msg_buf;
 	tx_nbyte = nbytes;
@@ -191,7 +191,7 @@ bool j1850::send_msg(byte *msg_buf, int nbytes) {
 }
 
 void j1850::monitor(void) {
-	static int old_message;
+	static uint8_t old_message;
 	
 	switch (monitoring_mode) {
 		//tests
@@ -222,10 +222,12 @@ void j1850::monitor(void) {
 
 		//RX\TX
 		case 1:
-			if (MESSAGE_SEND_OK == message)
+			if (MESSAGE_SEND_OK == message){
 				sendToUART("TX: ", tx_nbyte, tx_msg_buf);
-			if (MESSAGE_ACCEPT_OK == message)
+			}
+			if (MESSAGE_ACCEPT_OK == message){
 				sendToUART("RX: ", rx_nbyte, rx_msg_buf);
+			}
 			break;
 
 		default:
@@ -233,9 +235,9 @@ void j1850::monitor(void) {
 	}
 }
 
-void j1850::sendToUART(const char *header, int nbyte, byte *msg_buf) {
+void j1850::sendToUART(const char *header, volatile uint8_t nbyte, volatile byte *msg_buf) {
 	pr->print(header);
-	for (int i = 0; i < nbyte; i++) {
+	for (uint8_t i = 0; i < nbyte; i++) {
 		if (msg_buf[i] < 0x10)
 			pr->print(0);
 

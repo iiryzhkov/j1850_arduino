@@ -4,9 +4,9 @@
 j1850 j;
 
 void setup() {
-    Serial.begin(9600);
+    SerialUSB.begin(2000000);
     //Initialize. RX pin, TX pin
-    j.init(10, 11);
+    j.init(3, 5, false, &SerialUSB);
     j.set_monitoring(1);
 }
 
@@ -17,7 +17,7 @@ void loop() {
   //Receiving a message
   if (j.accept(rx_buf)) {
     //Sending the received message
-    j.send(rx_buf, j.rx_nbyte);
+    j.send(rx_buf, j.rx_nbyte - 1);
 
     //Sending a static message FF, FF, FF, FF, FF, CRC sum
     j.easy_send(5, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF);

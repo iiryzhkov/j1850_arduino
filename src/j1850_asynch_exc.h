@@ -46,7 +46,7 @@ class j1850_asynch_exc {
     void interrupt_off(void);
     void start_timer(void);
     unsigned long read_timer(void);
-    unsigned char crc(volatile unsigned char *msg_buf, volatile int nbytes);
+    unsigned char crc(volatile unsigned char *msg_buf, volatile uint8_t nbytes);
   private:
     unsigned long time_tmp = 0;
     volatile uint8_t position     = 0;//2
