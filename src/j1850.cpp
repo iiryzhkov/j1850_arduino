@@ -1,21 +1,15 @@
 #include "j1850.h"
 #include <Arduino.h>
+#include <stdarg.h>
 
-void j1850::init(int in_pin_, int out_pin_, bool review_) {
+void j1850::init(int in_pin_, int out_pin_, Print* pr_) {
 	out_pin = out_pin_;
 	in_pin = in_pin_;
-	review = review_;
-
-	if (review_) {
-		Serial.begin(9600);
-		mode = 1;
-	}
+	pr = pr_;
 
 	pinMode(in_pin_, INPUT_PULLUP);
 	pinMode(out_pin_, OUTPUT);
-
 	passive();
-
 	if_init = true;
 }
 
@@ -32,12 +26,18 @@ bool j1850::accept(byte *msg_buf, bool crt_c) {
 		}
 	}
 
-	if (review) {
-		if (Serial.available() >= 2)
-			mode = Serial.parseInt();
+	if (monitoring_mode > 0)
 		monitor();
-	}
+
 	return f;
+}
+
+void j1850::set_monitoring(int mode_){
+	if((mode_ > 5) or (mode_ < 0)){
+		pr->println("The mode should be from 0 to 5");
+		return;
+	}
+	monitoring_mode = mode_;
 }
 
 bool j1850::easy_send(int size, ...) {
@@ -69,8 +69,9 @@ bool j1850::send(byte *msg_buf, int nbytes) {
 
 	bool f = send_msg(msg_buf, nbytes);
 
-	if (review)
+	if (monitoring_mode > 0){
 		monitor();
+	}
 	return f;
 }
 
@@ -183,11 +184,11 @@ bool j1850::send_msg(byte *msg_buf, int nbytes) {
 void j1850::monitor(void) {
 	static int old_message;
 	
-	switch (mode) {
+	switch (monitoring_mode) {
 		//tests
 		case 5:
 			tests();
-			mode = 1; //default mode
+			monitoring_mode = 1; //default mode
 			break;
 
 		//RX
@@ -205,7 +206,7 @@ void j1850::monitor(void) {
 		//status codes
 		case 2:
 			if (old_message != message) {
-				Serial.println(message);
+				pr->println(message);
 				old_message = message;
 			}
 			break;
@@ -223,39 +224,35 @@ void j1850::monitor(void) {
 	}
 }
 
-void j1850::sendToUART(const char *header, int rx_nbyte, byte *msg_buf) {
-	Serial.print(header);
-	for (int i = 0; i < rx_nbyte; i++) {
+void j1850::sendToUART(const char *header, int nbyte, byte *msg_buf) {
+	pr->print(header);
+	for (int i = 0; i < nbyte; i++) {
 		if (msg_buf[i] < 0x10)
-			Serial.print(0);
+			pr->print(0);
 
-		Serial.print(msg_buf[i], HEX);
-
-		if (i == (rx_nbyte - 1)) {
-			Serial.print("\n");
-		} else {
-			Serial.print(" ");
-		}
+		pr->print(msg_buf[i], HEX);
+		pr->print(" ");
 	}
+	pr->print("\n");
 }
 
 void j1850::tests(void) {
 	char fail[] = "Test failure!\n";
 	char ok[] = "Test success!\n";
 	//тест i\o
-	Serial.print("----Start I/O test----\n");
+	pr->print("----Start I/O test----\n");
 	if (!is_active()) {
 		active();
 		if (is_active()) {
-			Serial.print(ok);
+			pr->print(ok);
 		} else {
-			Serial.print(fail);
+			pr->print(fail);
 		}
 		passive();
 	} else {
-		Serial.print(fail);
+		pr->print(fail);
 	}
-	Serial.print("----End I/O test----\n\n");
+	pr->print("----End I/O test----\n\n");
 }
 
 void j1850::active(void) {
