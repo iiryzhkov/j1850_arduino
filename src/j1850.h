@@ -32,8 +32,7 @@ class j1850 {
 	int in_pin = 0;
 	int out_pin = 0;
 	unsigned long time_tmp = 0;
-	void start_timer(void);
-	
+
 	void sendToUART(const char *, int, byte *);
 	void tests(void);
 	void active(void);
@@ -41,10 +40,11 @@ class j1850 {
 	bool is_active(void);
 	bool recv_msg(byte *);
 	bool send_msg(byte *, int);
-	int read_timer(void);
 	byte crc(byte *, int);
   protected:
 	void monitor(void);
+	void start_timer(void);
+	int read_timer(void);
   	int monitoring_mode = 0;
 	Print* pr;
 	byte *rx_msg_buf;
@@ -56,7 +56,7 @@ class j1850 {
 	bool send(byte *, int);
 	bool easy_send(int size, ...);
 
-	int message;
+	volatile int message;
 	int rx_nbyte = 0;
 	int tx_nbyte = 0;
 };
