@@ -31,14 +31,9 @@ class j1850 {
 	bool if_init = false;
 	int in_pin = 0;
 	int out_pin = 0;
-	int monitoring_mode = 0;
-	byte *rx_msg_buf;
-	byte *tx_msg_buf;
 	unsigned long time_tmp = 0;
-	Print* pr;
-
 	void start_timer(void);
-	void monitor(void);
+	
 	void sendToUART(const char *, int, byte *);
 	void tests(void);
 	void active(void);
@@ -48,6 +43,12 @@ class j1850 {
 	bool send_msg(byte *, int);
 	int read_timer(void);
 	byte crc(byte *, int);
+  protected:
+	void monitor(void);
+  	int monitoring_mode = 0;
+	Print* pr;
+	byte *rx_msg_buf;
+	byte *tx_msg_buf;
   public:
 	void init(int, int, Print* pr_ = &Serial);
 	void set_monitoring(int mod = 1);
