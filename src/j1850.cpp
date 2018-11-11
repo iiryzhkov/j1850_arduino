@@ -63,11 +63,19 @@ bool j1850::easy_send(int size, ...) {
 bool j1850::send(byte *msg_buf, int nbytes) {
 	if (!if_init)
 		return false;
-
+	bool f = false;
 	msg_buf[nbytes] = crc(msg_buf, nbytes);
 	nbytes++;
 
-	bool f = send_msg(msg_buf, nbytes);
+	for (int i=0; i<ATTEMPT_TO_SEND; i++){
+		if(send_msg(msg_buf, nbytes)){
+			f = true;
+			break;
+		}else if (message != ERROR_SEND_COLLISION){
+			f = false;
+			break;
+		}
+	}
 
 	if (monitoring_mode > 0){
 		monitor();
@@ -157,26 +165,22 @@ bool j1850::send_msg(byte *msg_buf, int nbytes) {
 			start_timer();
 	}
 
-	active();
-	delayMicroseconds(TX_SOF);
+	if (!active(TX_SOF)) return false;
 	do {
 		temp_byte = *msg_buf;
 		nbits = 8;
 		while (nbits--) {
 			if (nbits & 1) {
-				passive();
-				delayMicroseconds((temp_byte & 0x80) ? TX_LONG : TX_SHORT);
+				if(!passive((temp_byte & 0x80) ? TX_LONG : TX_SHORT)) return false;
 			} else {
-				active();
-				delayMicroseconds((temp_byte & 0x80) ? TX_SHORT : TX_LONG);
+				if(!active((temp_byte & 0x80) ? TX_SHORT : TX_LONG)) return false;
 			}
 			temp_byte <<= 1;
 		}
 		++msg_buf;
 	} while (--nbytes);
 
-	passive();
-	delayMicroseconds(TX_EOF);
+	if(!passive(TX_EOF)) return false;
 	message = MESSAGE_SEND_OK;
 	return true;
 }
@@ -255,12 +259,25 @@ void j1850::tests(void) {
 	pr->print("----End I/O test----\n\n");
 }
 
-void j1850::active(void) {
+bool j1850::active(int _time) {
+	if (is_active()){
+		message = ERROR_SEND_COLLISION;
+		return false;
+	}
 	digitalWrite(out_pin, LOW);
+	if (_time != 0) delayMicroseconds(_time);
+	return true;
 }
 
-void j1850::passive(void) {
+bool j1850::passive(int _time) {
+	if (!is_active()){
+		message = ERROR_SEND_COLLISION;
+		return false;
+	}
 	digitalWrite(out_pin, HIGH);
+	if (_time != 0) delayMicroseconds(_time);
+	return true;
+
 }
 
 bool j1850::is_active(void) {

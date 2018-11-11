@@ -25,6 +25,9 @@
 #define ERROR_SYMBOL_WAS_NOT_SOF 6
 #define ERROR_SYMBOL_WAS_NOT_SHORT 7
 #define ERROR_ACCEPT_CRC 8
+#define ERROR_SEND_COLLISION 9
+
+#define ATTEMPT_TO_SEND 5
 
 class j1850 {
   private:
@@ -35,8 +38,8 @@ class j1850 {
 
 	void sendToUART(const char *, int, byte *);
 	void tests(void);
-	void active(void);
-	void passive(void);
+	bool active(int _time = 0);
+	bool passive(int _time = 0);
 	bool is_active(void);
 	bool recv_msg(byte *);
 	bool send_msg(byte *, int);
