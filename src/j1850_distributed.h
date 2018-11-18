@@ -8,7 +8,7 @@
 #define WIRE_WRITE_OK 13
 #define WIRE_READ_OK 14
 
-#define TIMEOUT_ACCEPT_DATA_US 1000
+#define TIMEOUT_ACCEPT_DATA_US 4000
 
 class TestSlave
 {
@@ -94,9 +94,9 @@ class j1850_slave : public j1850
   private:
     func filter;
     byte buff_read[13];
-    volatile byte buff_write[12];
-    volatile int read_bytes = 0;
-    volatile int write_bytes = 0;
+    byte buff_write[12];
+    int read_bytes = 0;
+    int write_bytes = 0;
 };
 
 class j1850_master : public j1850
@@ -105,7 +105,7 @@ class j1850_master : public j1850
     void init(int _address = 8, int speed = 3400000, Print *pr_ = &Serial);
     bool accept(byte *, bool);
     bool send(byte *, int);
-    bool j1850_master::easy_send(int, ...);
+    bool easy_send(int, ...);
   private:
     int address = 0;
 };

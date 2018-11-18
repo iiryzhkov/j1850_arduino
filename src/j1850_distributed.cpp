@@ -1,5 +1,7 @@
 #include "j1850_distributed.h"
 #include <Wire.h>
+#include <stdarg.h>
+
 
 j1850_slave *j1850_slave::instances = NULL;
 
@@ -95,6 +97,8 @@ void j1850_master::init(int _address, int speed, Print *pr_)
 
 bool j1850_master::accept(byte *msg_buf, bool timeout)
 {
+    rx_msg_buf = msg_buf;
+    message = 0;
     if (timeout)
     {
         if (read_timer() < TIMEOUT_ACCEPT_DATA_US){
@@ -121,6 +125,8 @@ bool j1850_master::accept(byte *msg_buf, bool timeout)
 
 bool j1850_master::send(byte *msg_buf, int nbytes)
 {
+    message = 0;
+    tx_msg_buf = msg_buf;
     bool res = false;
     Wire.beginTransmission(address);
     Wire.write(msg_buf, nbytes);
