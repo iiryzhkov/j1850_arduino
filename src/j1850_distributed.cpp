@@ -17,68 +17,49 @@ void j1850_slave::init(int in_pin_, int out_pin_, Print *pr_, int address, int s
 
 void j1850_slave::__receiveEvent(int howMany)
 {
-    int i = 0;
-    if (write_bytes > 0)
-    {
-        while (0 < Wire.available())
-        {
-            Wire.read();
-        }
+    if (!write_buf.check_size(howMany)){
         message = WIRE_WRITE_BUFFER_IS_NOT_EMPTY;
+        return;
     }
-    else
+    while (0 < Wire.available())
     {
-        while (0 < Wire.available())
-        {
-            buff_write[i++] = Wire.read();
-        }
-        message = WIRE_READ_OK;
-        write_bytes = i;
+        write_buf.add_event(Wire.read());
     }
+    write_buf.add_event(write_buf.get_devider());
+    message = WIRE_READ_OK;
 }
 
 void j1850_slave::__requestEvent()
 {
-    if (read_bytes > 0)
-    {
-        Wire.write(buff_read, read_bytes);
-        read_bytes = 0;
+    byte tmp_read[13] = {0};
+    int len = read_buf.count_array(tmp_read, 12, 1);
+    
+    if(len > 0){
+        tmp_read[0] = len;
+        Wire.write(tmp_read, len + 1);
         message = WIRE_WRITE_OK;
-    }
-    else
-    {
+    }else{
         Wire.write(0);
     }
 }
 
 void j1850_slave::loop()
 {
-    byte tmp_read_buff[12];
-    if (accept(tmp_read_buff, true))
+    byte tmp_buf[12] = {0};
+    if (accept(tmp_buf, true))
     {
-        if (!filter(tmp_read_buff, rx_nbyte))
+        if (filter(tmp_buf, rx_nbyte))
         {
-            message = J1850_MESSAGE_FILTERED;
-            return;
-        }
-        if (read_bytes == 0)
-        {
-            buff_read[0] = rx_nbyte;
-            for (int i = 0; i < rx_nbyte; i++)
-            {
-                buff_read[i + 1] = tmp_read_buff[i];
+            if(!read_buf.add_array(tmp_buf, rx_nbyte)){
+                message = WIRE_READ_BUFFER_IS_NOT_EMPTY;
             }
-            read_bytes = rx_nbyte + 1;
-        }
-        else
-        {
-            message = WIRE_READ_BUFFER_IS_NOT_EMPTY;
+        }else{
+            message = J1850_MESSAGE_FILTERED;
         }
     }
-    if (write_bytes > 0)
-    {
-        send(buff_write, write_bytes);
-        write_bytes = 0;
+    int len = write_buf.count_array(tmp_buf, 12);
+    if(len > 0){
+        send(tmp_buf, len);
     }
 }
 

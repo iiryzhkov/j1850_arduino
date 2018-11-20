@@ -1,6 +1,7 @@
 #ifndef J1850_D
 #define J1850_D
 #include "j1850.h"
+#include "queue_control.h"
 
 #define J1850_MESSAGE_FILTERED 10
 #define WIRE_WRITE_BUFFER_IS_NOT_EMPTY 11
@@ -93,10 +94,8 @@ class j1850_slave : public j1850
 
   private:
     func filter;
-    byte buff_read[13];
-    byte buff_write[12];
-    int read_bytes = 0;
-    int write_bytes = 0;
+    queue_control_array read_buf = queue_control_array(255);
+    queue_control_array write_buf = queue_control_array(255);
 };
 
 class j1850_master : public j1850
