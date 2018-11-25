@@ -5,14 +5,41 @@
 
 j1850_slave *j1850_slave::instances = NULL;
 
-void j1850_slave::init(int in_pin_, int out_pin_, Print *pr_, int address, int speed)
+void j1850_slave::init(int in_pin_, int out_pin_, Print *pr_, int address, long speed)
 {
-    j1850::init(in_pin_, out_pin_, pr_);
+    TestSlave::init(in_pin_, out_pin_, pr_);
     Wire.begin(address);
     Wire.setClock(speed);
     Wire.onRequest(requestEvent);
     Wire.onReceive(receiveEvent);
     instances = this;
+}
+
+void j1850_slave::set_monitoring(int mode_)
+{
+	if((mode_ > 6) or (mode_ < 0)){
+		pr->println("The mode should be from 0 to 6");
+		return;
+	}
+	monitoring_mode = mode_;
+}
+
+void j1850_slave::len_bufer()
+{
+    static int old_read_len = 0;
+    static int old_write_len = 0;
+    int read_len = read_buf.get_size();
+    int write_len = write_buf.get_size();
+    if(old_read_len != read_len){
+        pr->print("R: ");
+        pr->println(read_len);
+        old_read_len = read_len;
+    }
+    if(old_write_len != write_len){
+        pr->print("W: ");
+        pr->println(write_len);
+        old_write_len = write_len;
+    }
 }
 
 void j1850_slave::__receiveEvent(int howMany)
@@ -61,6 +88,9 @@ void j1850_slave::loop()
     if(len > 0){
         send(tmp_buf, len);
     }
+    if (monitoring_mode == 6){
+        len_bufer();
+    }
 }
 
 void j1850_slave::set_filter(func f)
@@ -68,7 +98,7 @@ void j1850_slave::set_filter(func f)
     filter = f;
 }
 
-void j1850_master::init(int _address, int speed, Print *pr_)
+void j1850_master::init(int _address, long speed, Print *pr_)
 {
     address = _address;
     pr = pr_;
@@ -80,6 +110,7 @@ bool j1850_master::accept(byte *msg_buf, bool timeout)
 {
     rx_msg_buf = msg_buf;
     message = 0;
+    rx_nbyte = 0;
     if (timeout)
     {
         if (read_timer() < TIMEOUT_ACCEPT_DATA_US){
@@ -96,8 +127,8 @@ bool j1850_master::accept(byte *msg_buf, bool timeout)
     if (len > 0)
     {
         message = MESSAGE_ACCEPT_OK;
+        rx_nbyte = len;
     }
-    rx_nbyte = len;
     if (monitoring_mode > 0){
         monitor();
     }
@@ -107,6 +138,7 @@ bool j1850_master::accept(byte *msg_buf, bool timeout)
 bool j1850_master::send(byte *msg_buf, int nbytes)
 {
     message = 0;
+    tx_nbyte = 0;
     tx_msg_buf = msg_buf;
     bool res = false;
     Wire.beginTransmission(address);
@@ -115,8 +147,8 @@ bool j1850_master::send(byte *msg_buf, int nbytes)
     {
         res = true;
         message = MESSAGE_SEND_OK;
+        tx_nbyte = nbytes;
     }
-    tx_nbyte = nbytes;
     if (monitoring_mode > 0)
     {
         monitor();

@@ -10,6 +10,11 @@
 #define WIRE_READ_OK 14
 
 #define TIMEOUT_ACCEPT_DATA_US 4000
+#define SPEAD_I2C 3400000
+#define ADDRESS_I2C 8
+#define LEN_BUFFER_R 255
+#define LEN_BUFFER_W 255
+
 
 class TestSlave
 {
@@ -18,13 +23,11 @@ class TestSlave
     int rx_nbyte = 0;
     bool if_read = false;
     int message = 0;
-    void init(int a, int s, Print *)
+    Print* pr;
+    int monitoring_mode = 0;
+    void init(int, int, Print* pr_ = &Serial)
     {
-        return;
-    }
-    void set_monitoring(int x)
-    {
-        return;
+        pr = pr_;
     }
     bool accept(byte *buff, bool a)
     {
@@ -72,7 +75,7 @@ class TestSlave
     }
 };
 
-class j1850_slave : public j1850
+class j1850_slave : public TestSlave
 {
     typedef bool (*func)(byte* a, int b);
     static j1850_slave *instances;
@@ -86,22 +89,24 @@ class j1850_slave : public j1850
     }
 
   public:
-    void init(int, int, Print *pr_ = &Serial, int address = 8, int speed = 3400000);
+    void init(int, int, Print *pr_ = &Serial, int address = ADDRESS_I2C, long speed = SPEAD_I2C);
     void __receiveEvent(int);
     void __requestEvent();
     void loop();
     void set_filter(func);
+    void set_monitoring(int mod = 1);
 
   private:
     func filter;
-    queue_control_array read_buf = queue_control_array(255);
-    queue_control_array write_buf = queue_control_array(255);
+    void len_bufer();
+    queue_control_array read_buf = queue_control_array(LEN_BUFFER_R);
+    queue_control_array write_buf = queue_control_array(LEN_BUFFER_W);
 };
 
 class j1850_master : public j1850
 {
   public:
-    void init(int _address = 8, int speed = 3400000, Print *pr_ = &Serial);
+    void init(int _address = ADDRESS_I2C, long speed = SPEAD_I2C, Print *pr_ = &Serial);
     bool accept(byte *, bool);
     bool send(byte *, int);
     bool easy_send(int, ...);
