@@ -75,7 +75,7 @@ class TestSlave
     }
 };
 
-class j1850_slave : public TestSlave
+class j1850_slave : public j1850
 {
     typedef bool (*func)(byte* a, int b);
     static j1850_slave *instances;

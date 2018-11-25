@@ -7,7 +7,7 @@ j1850_slave *j1850_slave::instances = NULL;
 
 void j1850_slave::init(int in_pin_, int out_pin_, Print *pr_, int address, long speed)
 {
-    TestSlave::init(in_pin_, out_pin_, pr_);
+    j1850::init(in_pin_, out_pin_, pr_);
     Wire.begin(address);
     Wire.setClock(speed);
     Wire.onRequest(requestEvent);
