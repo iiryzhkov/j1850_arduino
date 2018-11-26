@@ -9,71 +9,11 @@
 #define WIRE_WRITE_OK 13
 #define WIRE_READ_OK 14
 
-#define TIMEOUT_ACCEPT_DATA_US 4000
+#define TIMEOUT_ACCEPT_DATA_US 10000
 #define SPEAD_I2C 3400000
 #define ADDRESS_I2C 8
 #define LEN_BUFFER_R 255
 #define LEN_BUFFER_W 255
-
-
-class TestSlave
-{
-  public:
-    byte x[12];
-    int rx_nbyte = 0;
-    bool if_read = false;
-    int message = 0;
-    Print* pr;
-    int monitoring_mode = 0;
-    void init(int, int, Print* pr_ = &Serial)
-    {
-        pr = pr_;
-    }
-    bool accept(byte *buff, bool a)
-    {
-        if (if_read)
-        {
-            rx_nbyte = 0;
-        }
-        if (rx_nbyte > 0)
-        {
-            for (int i = 0; i < rx_nbyte; i++)
-            {
-                buff[i] = x[i];
-            }
-            // sendToUART("RX: ", rx_nbyte, buff);
-            if_read = true;
-            return true;
-        }
-        return false;
-    }
-    void send(byte *buuf, int f)
-    {
-        if (f > 0)
-        {
-            for (int i = 0; i < f; i++)
-            {
-                x[i] = buuf[i];
-            }
-            // sendToUART("TX: ", f, x);
-            if_read = false;
-            rx_nbyte = f;
-        }
-    }
-    void sendToUART(const char *header, uint8_t nbyte, byte *msg_buf)
-    {
-        Serial.print(header);
-        for (uint8_t i = 0; i < nbyte; i++)
-        {
-            if (msg_buf[i] < 0x10)
-                Serial.print(0);
-
-            Serial.print(msg_buf[i], HEX);
-            Serial.print(" ");
-        }
-        Serial.print("\n");
-    }
-};
 
 class j1850_slave : public j1850
 {
