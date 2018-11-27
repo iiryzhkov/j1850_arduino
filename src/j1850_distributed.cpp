@@ -58,13 +58,19 @@ void j1850_slave::__receiveEvent(int howMany)
 
 void j1850_slave::__requestEvent()
 {
-    byte tmp_read[13] = {0};
-    int len = read_buf.count_array(tmp_read, 12, 1);
-    
-    if(len > 0){
-        tmp_read[0] = len;
-        Wire.write(tmp_read, len + 1);
-        message = WIRE_WRITE_OK;
+    byte tmp_read[12] = {0};
+
+    int first = read_buf.first_item();
+    if (first > 1000){
+        Wire.write(read_buf.count_event() - 1000);
+    }else if (first != -1){
+        int len = read_buf.count_array(tmp_read, 12);
+        if (len > 0){
+            Wire.write(tmp_read, len);
+            message = WIRE_WRITE_OK;
+        }else{
+            Wire.write(0);
+        }
     }else{
         Wire.write(0);
     }
@@ -77,7 +83,10 @@ void j1850_slave::loop()
     {
         if (filter(tmp_buf, rx_nbyte))
         {
-            if(!read_buf.add_array(tmp_buf, rx_nbyte)){
+            if(read_buf.check_size(rx_nbyte)){
+                read_buf.add_event(1000 + rx_nbyte - 1);
+            }
+            if(!read_buf.add_array(tmp_buf, rx_nbyte - 1)){
                 message = WIRE_READ_BUFFER_IS_NOT_EMPTY;
             }
         }else{
@@ -118,8 +127,9 @@ bool j1850_master::accept(byte *msg_buf, bool timeout)
         }
         start_timer();
     }
-    Wire.requestFrom(address, 13);
+    Wire.requestFrom(address, 1);
     int len = Wire.read();
+    if (len > 0) Wire.requestFrom(address, len);
     for (int i = 0; i < len; i++)
     {
         msg_buf[i] = Wire.read();

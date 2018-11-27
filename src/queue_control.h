@@ -52,6 +52,11 @@ class queue_control{
             if(!current_size) return -1;
             return queue[current_size - 1];
         }
+
+        int first_item(){
+            if(!current_size) return -1;
+            return queue[0];
+        }
 };
 
 class queue_control_array : public queue_control{
