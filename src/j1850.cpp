@@ -75,6 +75,7 @@ bool j1850::send(byte *msg_buf, int nbytes) {
 			f = false;
 			break;
 		}
+		delayMicroseconds(TX_EOF);
 	}
 
 	if (monitoring_mode > 0){
@@ -261,11 +262,19 @@ void j1850::tests(void) {
 
 bool j1850::active(int _time) {
 	if (is_active()){
+		passive();
 		message = ERROR_SEND_COLLISION;
 		return false;
 	}
+	start_timer();
 	digitalWrite(out_pin, LOW);
 	if (_time != 0) delayMicroseconds(_time);
+	long len_work = read_timer();
+	if ((len_work > _time + _time / 2) || (len_work < _time - _time / 2)){
+		passive();
+		message = ERROR_SEND_COLLISION;
+		return false;
+	}
 	return true;
 }
 
@@ -274,10 +283,15 @@ bool j1850::passive(int _time) {
 		message = ERROR_SEND_COLLISION;
 		return false;
 	}
+	start_timer();
 	digitalWrite(out_pin, HIGH);
 	if (_time != 0) delayMicroseconds(_time);
+	long len_work = read_timer();
+	if ((len_work > _time + _time / 2) || (len_work < _time - _time / 2)){
+		message = ERROR_SEND_COLLISION;
+		return false;	
+	}
 	return true;
-
 }
 
 bool j1850::is_active(void) {
