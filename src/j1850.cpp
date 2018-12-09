@@ -66,7 +66,6 @@ bool j1850::send(byte *msg_buf, int nbytes) {
 	bool f = false;
 	msg_buf[nbytes] = crc(msg_buf, nbytes);
 	nbytes++;
-
 	for (int i=0; i<ATTEMPT_TO_SEND; i++){
 		if(send_msg(msg_buf, nbytes)){
 			f = true;
@@ -75,7 +74,7 @@ bool j1850::send(byte *msg_buf, int nbytes) {
 			f = false;
 			break;
 		}
-		delayMicroseconds(TX_EOF);
+		delay(1);
 	}
 
 	if (monitoring_mode > 0){
@@ -270,7 +269,7 @@ bool j1850::active(int _time) {
 	digitalWrite(out_pin, LOW);
 	if (_time != 0) delayMicroseconds(_time);
 	long len_work = read_timer();
-	if ((len_work > _time + _time / 2) || (len_work < _time - _time / 2)){
+	if ((len_work > _time + _time / TOLERANCE) || (len_work < _time - _time / TOLERANCE)){
 		passive();
 		message = ERROR_SEND_COLLISION;
 		return false;
@@ -287,7 +286,7 @@ bool j1850::passive(int _time) {
 	digitalWrite(out_pin, HIGH);
 	if (_time != 0) delayMicroseconds(_time);
 	long len_work = read_timer();
-	if ((len_work > _time + _time / 2) || (len_work < _time - _time / 2)){
+	if ((len_work > _time + _time / TOLERANCE) || (len_work < _time - _time / TOLERANCE)){
 		message = ERROR_SEND_COLLISION;
 		return false;	
 	}

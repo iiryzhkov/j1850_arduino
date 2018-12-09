@@ -28,6 +28,7 @@
 #define ERROR_SEND_COLLISION 9
 
 #define ATTEMPT_TO_SEND 5
+#define TOLERANCE 2 // 2 - 1/2 time
 
 class j1850 {
   private:
