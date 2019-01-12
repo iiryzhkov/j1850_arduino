@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 
-#define DEVIDER -2
+#define DIVIDER -2
 
 class queue_control{
     protected:
@@ -62,30 +62,30 @@ class queue_control{
 class queue_control_array : public queue_control{
     public:
         queue_control_array(int _size) : queue_control(_size) {}
-        int get_devider()
+        int get_divider()
         {
-            return DEVIDER;
+            return DIVIDER;
         }
         bool check_size(int len){
             return (get_size() < max_size - len);
         }
 
-        bool add_array(byte * bufer, int len)
+        bool add_array(byte * buffer, int len)
         {                        
             if (check_size(len)){
                 for(int i=0;i<len;i++){
-                    add_event(bufer[i]);
+                    add_event(buffer[i]);
                 }
-                add_event(get_devider());
+                add_event(get_divider());
                 return true;
             }
             return false;
         }
 
-        int count_array(byte * bufer, int max_len, int bias=0){
+        int count_array(byte * buffer, int max_len, int bias=0){
             int tmp_byte = 0; 
             int i = 0;
-            if (last_item() != get_devider()){
+            if (last_item() != get_divider()){
                 return -1;
             }
             while(i <= max_len){
@@ -93,10 +93,10 @@ class queue_control_array : public queue_control{
                 if (tmp_byte < 0){
                     break;
                 }
-                bufer[i + bias] = tmp_byte;
+                buffer[i + bias] = tmp_byte;
                 i++;
             }
-            if (i <= max_len && tmp_byte == get_devider()){
+            if (i <= max_len && tmp_byte == get_divider()){
                 return i;
             }else{
                 return -1;

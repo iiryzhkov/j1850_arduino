@@ -24,12 +24,16 @@ void j1850_slave::set_monitoring(int mode_)
 	monitoring_mode = mode_;
 }
 
-void j1850_slave::len_bufer()
+bool j1850_slave::len_buffer(bool _print)
 {
     static int old_read_len = 0;
     static int old_write_len = 0;
     int read_len = read_buf.get_size();
     int write_len = write_buf.get_size();
+    bool if_filled = (bool)read_len || (bool)write_len;
+    if (!_print){
+        return if_filled;
+    }
     if(old_read_len != read_len){
         pr->print("R: ");
         pr->println(read_len);
@@ -40,6 +44,7 @@ void j1850_slave::len_bufer()
         pr->println(write_len);
         old_write_len = write_len;
     }
+    return if_filled;
 }
 
 void j1850_slave::__receiveEvent(int howMany)
@@ -52,7 +57,7 @@ void j1850_slave::__receiveEvent(int howMany)
     {
         write_buf.add_event(Wire.read());
     }
-    write_buf.add_event(write_buf.get_devider());
+    write_buf.add_event(write_buf.get_divider());
     message = WIRE_READ_OK;
 }
 
@@ -98,7 +103,7 @@ void j1850_slave::loop()
         send(tmp_buf, len);
     }
     if (monitoring_mode == 6){
-        len_bufer();
+        len_buffer(true);
     }
 }
 
