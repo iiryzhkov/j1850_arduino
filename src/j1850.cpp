@@ -267,11 +267,8 @@ bool j1850::active(int _time) {
 	}
 	start_timer();
 	digitalWrite(out_pin, LOW);
-	if (_time != 0) delayMicroseconds(_time);
-	long len_work = read_timer();
-	if ((len_work > _time + _time / TOLERANCE) || (len_work < _time - _time / TOLERANCE)){
+	if(!check_io_timing(_time)){
 		passive();
-		message = ERROR_SEND_COLLISION;
 		return false;
 	}
 	return true;
@@ -284,11 +281,18 @@ bool j1850::passive(int _time) {
 	}
 	start_timer();
 	digitalWrite(out_pin, HIGH);
-	if (_time != 0) delayMicroseconds(_time);
+	return check_io_timing(_time);
+}
+
+bool j1850::check_io_timing(int _time){
+	if (_time == 0) {
+		return true;
+	}
+	delayMicroseconds(_time);
 	long len_work = read_timer();
 	if ((len_work > _time + _time / TOLERANCE) || (len_work < _time - _time / TOLERANCE)){
 		message = ERROR_SEND_COLLISION;
-		return false;	
+		return false;
 	}
 	return true;
 }

@@ -44,6 +44,7 @@ class j1850 {
 	bool is_active(void);
 	bool recv_msg(byte *);
 	bool send_msg(byte *, int);
+	bool check_io_timing(int _time);
 	byte crc(byte *, int);
   protected:
 	void monitor(void);
