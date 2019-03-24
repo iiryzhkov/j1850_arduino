@@ -18,8 +18,8 @@ void loop() {
   if (j.accept(rx_buf)) {
     //Sending the received message
     j.send(rx_buf, j.rx_nbyte);
-
-    //Sending a static message FF, FF, FF, FF, FF, CRC sum
-    j.easy_send(5, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
+1
+1, FF, FF, FF, FF, CRC sum
+1FF, 0xFF, 0xFF);
   }
 }
