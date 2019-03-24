@@ -108,4 +108,171 @@ The **'message'*** property contains event codes:
 - 5 - ERROR_ON_SOF_TIMEOUT
 - 6 - ERROR_SYMBOL_WAS_NOT_SOF
 - 7 - ERROR_SYMBOL_WAS_NOT_SHORT
-- 8 - define ERROR_ACCEPT_CRC
+- 8 - ERROR_ACCEPT_CRC
+- 9 - ERROR_SEND_COLLISION
+
+### Params
+
+- ATTEMPT_TO_SEND -  The number of attempts to send a packet
+- TOLERANCE - Permissible deviation from the duration of the pulse. Let us say, transmit signal 100 ms, means 100 +(-) 100\2 = 150(50)ms
+
+
+# API distributed work
+
+Allows you to work with j1850 on another controller and link it with the main controller on I2C. Devices must be connected by all rules. See the instructions for the library Wire.
+
+## slave
+
+### Include
+
+`#include <j1850_distributed.h>`
+
+Create an instance of the class
+for example, create the object 'j'.
+
+`j1850_slave j;`
+
+### Init
+
+`void j1850_slave::init(int RX_PIN, int TX_PIN, Print* pr, int address, long speed)`
+
+- RX_PIN - port for incoming signal
+- TX_PIN - port for outgoing signal
+- pr -     serial port output class (for example: Serial - default or SerialUSB)
+- address - I2C address of this device. Default value ADDRESS_I2C
+- speed - I2C speed. Default value SPEED_I2C
+
+for example:
+
+`j.init(10, 11, &SerialUSB, 3400000, 8);`
+
+#### Debugging mode
+
+`j.set_monitoring(int mode)`
+
+- mode - data output mode to the serial port 
+
+It allows you to output incoming messages, outgoing messages, status codes and run tests. 
+- 0 - 5 - just like j1850
+- 6 - status of I/O buffers
+
+#### Filter
+
+`void set_filter(func)`
+
+- func - linc on function
+
+Sets the filter function.
+
+`bool filter(byte *data, int len)`
+
+- data - link to the array with the message
+- len - len to this array
+
+for example:
+`bool filter(byte *data, int len){`
+    `return true;`
+`}`
+`j.set_filter(&filter);`
+
+`j.set_monitoring(int mode)`
+
+### Work
+
+`void loop();`
+
+It is necessary to call each cycle.
+
+for example:
+`j.loop();`
+
+#### Buffers
+
+`bool len_buffer(bool _print=false);`
+
+Check buffer btatus
+
+- _print - state output to console
+- return - data availability in buffers
+
+### Status codes
+The **'message'*** property contains event codes:
+
+- 1 - 9 - just like j1850
+- 10 - J1850_MESSAGE_FILTERED
+- 11 - WIRE_WRITE_BUFFER_IS_NOT_EMPTY
+- 12 - WIRE_READ_BUFFER_IS_NOT_EMPTY
+- 13 - WIRE_WRITE_OK
+- 14 - WIRE_READ_OK
+
+### Params
+
+- SPEED_I2C - I2C speed
+- ADDRESS_I2C - I2C address of this device
+- LEN_BUFFER_R - Read buffer size
+- LEN_BUFFER_W - Write buffer size
+
+## Master
+
+### Include
+
+`#include <j1850_distributed.h>`
+
+Create an instance of the class
+for example, create the object 'j'.
+
+`j1850_master j;`
+
+### Init
+
+`void j1850_master::init(int address, long speed, Print* pr,)`
+
+- pr -     serial port output class (for example: Serial - default or SerialUSB)
+- address - I2C slave address. Default value ADDRESS_I2C
+- speed - I2C speed. Default value SPEED_I2C
+
+for example:
+
+`j.init(3400000, 8, &SerialUSB);`
+
+### Read the messages
+
+`bool j1850_master::accept(byte *msg_buf, bool timeout)`
+
+- msg_buf - buffer for received messages
+- timeout - limit call frequency to TIMEOUT_ACCEPT_DATA_US
+
+returns the receive status:
+- 1 - successfully
+- 0 - failure
+
+for example:
+Before receiving messages, you must create a receive buffer. Protocol j1850 allows you to send messages up to **12 characters**.
+
+`byte rx_buf[12];`
+
+Receiving a message
+
+`j.accept(rx_buf)`
+
+### Sending a message
+
+There are two methods to send a message:
+
+`bool j1850::send(byte *tx_buf, int nbytes)`
+
+and
+
+`bool j1850::easy_send(int size, ...)`
+
+Work as in J1850
+
+### Status codes
+The **'message'*** property contains event codes:
+
+- 1 - MESSAGE_SEND_OK
+- 2 - MESSAGE_ACCEPT_OK
+
+### Params
+
+- TIMEOUT_ACCEPT_DATA_US - data retrieval timeout

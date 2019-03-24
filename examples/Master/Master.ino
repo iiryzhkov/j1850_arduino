@@ -1,12 +1,12 @@
-#include <j1850.h>
+#include <j1850_distributed.h>
 
 //Create an instance of the class
-j1850 j;
+j1850_master j;
 
 void setup() {
     Serial.begin(2000000);
-    //Initialize. RX pin, TX pin
-    j.init(10, 11, &Serial);
+    // initialization with default values
+    j.init();
     j.set_monitoring(1);
 }
 
@@ -15,7 +15,7 @@ void loop() {
   byte rx_buf[12];
   
   //Receiving a message
-  if (j.accept(rx_buf)) {
+  if (j.accept(rx_buf, true)) {
     //Sending the received message
     j.send(rx_buf, j.rx_nbyte);
 
