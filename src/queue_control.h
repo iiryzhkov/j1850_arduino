@@ -28,16 +28,16 @@ class queue_control{
         bool add_event(int event){
             if (empty){
                 empty = false;
-                queue[last_number] = event;
-                return true;
-            } else if (get_size() == max_size) {
+            } else {
+                next_number(&last_number);
+            }
+            if (get_size() == max_size) {
                 if (auto_remove){
                     next_number(&cursor);
                 } else {
                     return false;
                 }
             }
-            next_number(&last_number);
             queue[last_number] = event;
             return true;
         }
