@@ -8,9 +8,16 @@
 class queue_control{
     protected:
         int *queue;
-        int current_size = 0;
+        int cursor = 0;
+        int last_number = 0;
         int max_size = 0;
-        bool auto_remove=false;
+        bool auto_remove = false;
+        bool empty = true;
+
+        int next_number(int *val){
+            (*val)++;
+            if (*val == max_size) (*val) = 0;
+        }
 
     public:
         queue_control(int _size, bool _auto_remove=false){
@@ -19,43 +26,58 @@ class queue_control{
             auto_remove = _auto_remove;
         }
         bool add_event(int event){
-            if (current_size == max_size) {
-                if(auto_remove){
-                    count_event();
-                }else{
+            if (empty){
+                empty = false;
+            } else {
+                next_number(&last_number);
+            }
+            if (get_size() == max_size) {
+                if (auto_remove){
+                    next_number(&cursor);
+                } else {
                     return false;
                 }
             }
-            queue[current_size++] = event;
+            queue[last_number] = event;
             return true;
         }
 
         int count_event(){
-            if(!current_size) return -1;
-            int ret = queue[0];
-            current_size--;
-            for(int i=0; i < current_size; i++) queue[i] = queue[i + 1];
-            queue[current_size]=0;
-            return ret;
+            if(empty) return -1;
+            int res = queue[cursor];
+            if (cursor == last_number){
+                empty = true;
+            } else {
+                next_number(&cursor);
+            }
+            return res;
         }
 
         int get_size(){
-            return current_size;
+            if (empty) {
+                return 0;
+            } else if (cursor == last_number) {
+                return 1;
+            } else if (last_number > cursor) {
+                return last_number + 1 - cursor;
+            }
+            return max_size - cursor + last_number + 1;
         }
 
         void remove_queue(){
-            current_size = 0;
-            for(int i = 0; i < max_size; i++) queue[i] = 0;
+            cursor = 0;
+            last_number = 0;
+            empty = true;
         }
 
         int last_item(){
-            if(!current_size) return -1;
-            return queue[current_size - 1];
+            if(empty) return -1;
+            return queue[last_number];
         }
 
         int first_item(){
-            if(!current_size) return -1;
-            return queue[0];
+            if(empty) return -1;
+            return queue[cursor];
         }
 };
 
